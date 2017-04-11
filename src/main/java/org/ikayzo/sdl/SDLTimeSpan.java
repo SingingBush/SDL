@@ -39,11 +39,11 @@ public class SDLTimeSpan implements Serializable {
 	 * Create an sdl time span.  Note: if the timespan is negative all
 	 * components should be negative.
 	 * 
-	 * @param days
-	 * @param hours
-	 * @param minutes
-	 * @param seconds
-	 * @param milliseconds
+	 * @param days number of days
+	 * @param hours number of hours
+	 * @param minutes number of minutes
+	 * @param seconds number of seconds
+	 * @param milliseconds number of milliseconds
 	 */
 	public SDLTimeSpan(int days, int hours, int minutes, int seconds,
 			int milliseconds) {
@@ -60,7 +60,7 @@ public class SDLTimeSpan implements Serializable {
 	 * Create an sdl time span using the total number of milliseconds in the
 	 * span.
 	 * 
-	 * @param totalMilliseconds
+	 * @param totalMilliseconds number of milli seconds
 	 */
 	public SDLTimeSpan(long totalMilliseconds) {
 		milliseconds=totalMilliseconds;
@@ -72,7 +72,7 @@ public class SDLTimeSpan implements Serializable {
 	 * @return The days component
 	 */
 	public int getDays() {
-		return (int)(((long)milliseconds)/MILLISECONDS_IN_DAY);
+		return (int)(milliseconds /MILLISECONDS_IN_DAY);
 	}
 	
 	/**
@@ -249,13 +249,13 @@ public class SDLTimeSpan implements Serializable {
 	}
 	
 	/**
-	 * <p>Returns an SDL representation of this time span using the format:<p>
+	 * <p>Returns an SDL representation of this time span using the format:</p>
 	 * 
 	 * <pre>
 	 * (days:)hours:minutes:seconds(.milliseconds)
 	 * </pre>
 	 * 
-	 * <p>(parenthesis indicate optional components)
+	 * <p>(parenthesis indicate optional components)</p>
 	 * 
 	 * <p>The days and milliseconds components will not be included if they 
 	 * are set to 0.  Days must be suffixed with "d" for clarity.</p>
@@ -292,15 +292,15 @@ public class SDLTimeSpan implements Serializable {
 		
 		sb.append(":");
 		
-		sb.append(padTo2((int)Math.abs(minutes)));
+		sb.append(padTo2(Math.abs(minutes)));
 		sb.append(":");
 		
-		sb.append(padTo2((int)Math.abs(seconds)));
+		sb.append(padTo2(Math.abs(seconds)));
 		
 		if(milliseconds!=0) {
 			sb.append(".");	
 			
-			String millis = "" + (int)Math.abs(milliseconds);
+			String millis = "" + Math.abs(milliseconds);
 			if(millis.length()==1)
 				millis="00"+millis;
 			else if(millis.length()==2)
@@ -314,7 +314,7 @@ public class SDLTimeSpan implements Serializable {
 	
 	private String padTo2(int val) {
 		if(val>-10 && val<0) {
-			return "-0" + (int)Math.abs(val);
+			return "-0" + Math.abs(val);
 		} else if(val>-1 && val<10) {
 			return "0" + val;
 		}

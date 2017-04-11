@@ -50,7 +50,7 @@ import java.util.Map.Entry;
  * 
  * <p>
  * Assuming this code is in a file called values.sdl, the values can be read 
- * using the following code (ignoring exceptions):<p>
+ * using the following code (ignoring exceptions):</p>
  * 
  * <pre>
  *     Tag root = new Tag("root").read(new File("values.sdl"));
@@ -62,7 +62,7 @@ import java.util.Map.Entry;
  * attributes, and (if it has a body) child tags.  In the example above, the
  * "values.sdl" file is read into a tag called "root".  It has two children
  * (tags) called "size" and "smoker".  Both these children have one value, no 
- * attributes, and no bodies.<p>
+ * attributes, and no bodies.</p>
  * 
  * <p>SDL is often used for simple key-value mappings.  To simplify things Tag  
  * has the methods getValue and setValue which operate on the first element in 
@@ -224,8 +224,8 @@ import java.util.Map.Entry;
  * <p>These types are designed to be portable across Java, .NET, and other 
  * popular platforms.</p>
  * 
- * <p>
- * SDL supports four comment types.
+ * <p>SDL supports four comment types.</p>
+ *
  * <ol>
  * <li>// single line comments identicle to those used in Java, C, etc. // style
  * comments can occur anywhere in a line.  All text after // up to the new line
@@ -236,7 +236,6 @@ import java.util.Map.Entry;
  * <li>Slash star (/*) style multiline comments.  These begin with a slash
  * star and end with a star slash.  Everything in between is ignored.</li>
  * </ol>
- * </p>
  * 
  * <p>A example SDL file:</p>
  * 
@@ -477,11 +476,12 @@ public class Tag implements Serializable {
 	 * search.
 	 * 
 	 * @param childName The name of the child Tag
+	 * @param recursive will search recursively if set to true
 	 * @return The first child tag having the given name or null if no such 
 	 *         child exists
 	 */
 	public Tag getChild(String childName, boolean recursive) {
-		for(Tag t:children) {
+		for(final Tag t : children) {
 			if(t.getName().equals(childName))
 				return t;
 			
@@ -677,7 +677,8 @@ public class Tag implements Serializable {
 	
 	/**
 	 * Get the attribute value associated with the given key.
-	 * 
+	 *
+	 * @param key attribute name
 	 * @return The value for the key if such a key exists
 	 */
 	public Object getAttribute(String key) {
@@ -736,16 +737,16 @@ public class Tag implements Serializable {
 	/**
 	 * Returns an immutable view of all the attributes in the given
 	 * namespace.
-	 * 
+	 *
+	 * @param namespace
 	 * @return An immutable view of all the attributes in the given
 	 *         namespace.
 	 */
-	public SortedMap<String, Object> getAttributesForNamespace(
-			String namespace) {
+	public SortedMap<String, Object> getAttributesForNamespace(final String namespace) {
 		
-		TreeMap<String,Object> atts = new TreeMap<String,Object>();
+		final TreeMap<String, Object> atts = new TreeMap<String,Object>();
 		
-		for(Entry<String,String> e:attributeToNamespace.entrySet()) {
+		for(final Entry<String, String> e : attributeToNamespace.entrySet()) {
 
 			if(e.getValue().equals(namespace)) {
 				String key = e.getKey();
@@ -839,10 +840,10 @@ public class Tag implements Serializable {
 	 * 
 	 * @param url A UTF8 encoded .sdl file
 	 * @throws IOException If there is an IO problem reading the source 
-	 * @throws ParseException If the SDL input is malformed
+	 * @throws SDLParseException If the SDL input is malformed
 	 * @return This tag after adding all the children read from the reader
 	 */
-	public Tag read(URL url) throws IOException, SDLParseException {
+	public Tag read(final URL url) throws IOException, SDLParseException {
 		return read(new InputStreamReader(url.openStream(), "UTF8"));
 	}	
 	
@@ -851,10 +852,10 @@ public class Tag implements Serializable {
 	 * 
 	 * @param file A UTF8 encoded .sdl file
 	 * @throws IOException If there is an IO problem reading the source 
-	 * @throws ParseException If the SDL input is malformed
+	 * @throws SDLParseException If the SDL input is malformed
 	 * @return This tag after adding all the children read from the reader
 	 */
-	public Tag read(File file) throws IOException, SDLParseException {
+	public Tag read(final File file) throws IOException, SDLParseException {
 		return read(new InputStreamReader(new FileInputStream(file), "UTF8"));
 	}	
 	
@@ -862,15 +863,15 @@ public class Tag implements Serializable {
 	 * Add all the tags specified in the given String to this Tag.
 	 * 
 	 * @param text An SDL string
-	 * @throws ParseException If the SDL input is malformed
+	 * @throws SDLParseException If the SDL input is malformed
 	 * @return This tag after adding all the children read from the reader
 	 */
-	public Tag read(String text) throws SDLParseException {
+	public Tag read(final String text) throws SDLParseException {
 		try {
 			return read(new StringReader(text));
-		} catch(IOException ioe) {
+		} catch(final IOException e) {
 			// Cannot happen
-			throw new InternalError("IOExceptio reading a String");
+			throw new InternalError("IOException reading a String");
 		}
 	}
 	
@@ -879,12 +880,12 @@ public class Tag implements Serializable {
 	 * 
 	 * @param reader A reader containing SDL source
 	 * @throws IOException If there is an IO problem reading the source 
-	 * @throws ParseException If the SDL input is malformed
+	 * @throws SDLParseException If the SDL input is malformed
 	 * @return This tag after adding all the children read from the reader
 	 */
 	public Tag read(Reader reader) throws IOException, SDLParseException {
-		List<Tag> tags = new Parser(reader).parse();
-		for(Tag t:tags)
+		final List<Tag> tags = new Parser(reader).parse();
+		for(final Tag t:tags)
 			addChild(t);
 		return this;
 	}
@@ -953,7 +954,7 @@ public class Tag implements Serializable {
 	 * 
 	 * TODO: break up long lines using the backslash
 	 */
-	String toString(String linePrefix) {
+	private String toString(String linePrefix) {
 		String newLine = System.getProperty("line.separator");
 		
 		if(linePrefix==null)

@@ -13,7 +13,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.javadoc.skip>true</maven.javadoc.skip><!-- todo: fix javadoc instead of skipping it -->
     </properties>
 
     <dependencies>

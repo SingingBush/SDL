@@ -167,18 +167,21 @@ public class SDL {
 	
 	/**
 	 * <p>Coerce the type to a standard SDL type or throw an illegal argument
-	 * exception if no coercion is possible.<p>
+	 * exception if no coercion is possible.</p>
 	 * 
 	 * <p>Coercion table</p>
 	 * <pre>
+	 *     {@code
 	 *     String, Character, Integer, Long, Float, Double, BigDecimal,
 	 *         Boolean, Calendar, SDLTimeSpan -> No change
 	 *     Byte[] -> byte[]
 	 *     Byte, Short -> Integer
 	 *     Date -> Calendar
+	 *     }
 	 * </pre>
 	 * 
 	 * @param obj An object to coerce
+	 * @return The value as a Java type, eg: String, Integer
 	 * @throws IllegalArgumentException if the type is coercible to a legal SDL
 	 *     type
 	 */
@@ -299,21 +302,18 @@ public class SDL {
 	 * <p>Parse the string of values and return a list.  The string is handled
 	 * as if it is the values portion of an SDL tag.</p>
 	 * 
-	 * <p>Example
+	 * Example
 	 * <pre>
 	 *     List list = SDL.list("1 true 12:24:01");
 	 * </pre>
-	 * </p>
 	 * 
 	 * <p>Will return an int, a boolean, and a time span.</p>
 	 * 
-	 * <p>Note: If you want the more descriptive SDLParseException to be thrown
-	 * use:
+	 * Note: If you want the more descriptive SDLParseException to be thrown use:
 	 * <pre>
 	 *     List list = new Tag("root").read("1 true 12:24:01")
 	 *         .getChild("content").getValues(); 
 	 * </pre>
-	 * </p>
 	 * 
 	 * @param valueList A string of space separated SDL literals
 	 * @return A list of values
@@ -337,23 +337,24 @@ public class SDL {
 	 * <p>Parse a string representing the attributes portion of an SDL tag
 	 * and return the results as a map.</p>
 	 * 
-	 * <p>Example
+	 * Example
 	 * <pre>
+	 * {@code
 	 *     Map<String,Object> m = SDL.map("value=1 debugging=on time=12:24:01");
+	 * }
 	 * </pre>
-	 * </p>
 	 * 
 	 * <p>Will return a map containing value=1, debugging=true, and
 	 * time=12:24:01</p>
 	 * 
-	 * <p>Note: If you want the more descriptive SDLParseException to be thrown
-	 * use:
+	 * Note: If you want the more descriptive SDLParseException to be thrown use:
 	 * <pre>
+	 * {@code
 	 *     Map<String,Object> m = new Tag("root")
 	 *         .read("atts " + attributeString).getChild("atts")
 	 *         .getAttributes();
+	 * }
 	 * </pre>
-	 * </p>
 	 * 
 	 * @param attributeString A string of space separated key=value pairs
 	 * @return A map created from the attribute string
