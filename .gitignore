@@ -1,5 +1,6 @@
-.svn
-/doc/.svn/
-/doc/index-files/.svn/
-/doc/org/.svn/
-/doc/org/ikayzo/.svn/
+.DS_Store
+target/
+
+# Ignore Intellij IDE specific files
+.idea/
+*.iml
