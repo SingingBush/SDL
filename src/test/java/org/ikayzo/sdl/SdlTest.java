@@ -16,24 +16,14 @@
  */
 package org.ikayzo.sdl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.ikayzo.codec.Base64;
 import org.junit.Test;
 
-import static org.ikayzo.sdl.SDL.format;
+import static org.junit.Assert.*;
 
 /**
  * SDL unit tests.  Why aren't these JUnit tests?  Mostly because being self
@@ -45,11 +35,8 @@ import static org.ikayzo.sdl.SDL.format;
 public class SdlTest {
 
 	private static PrintWriter out = new PrintWriter(System.out, true);
-	private static int assertCount=0;
-	private static int failures=0;
 	
 	// Tag datastructure tests
-	private static final String TAG = "Tag";
 	private static final String TAG_WRITE_PARSE = "Tag Write Parse";
 	
 	// Basic Types Tests
@@ -69,73 +56,55 @@ public class SdlTest {
 	private static final String ATTRIBUTES = "Attributes";	
 	private static final String VALUES_AND_ATTRIBUTES = "Values and Attributes";		
 	private static final String CHILDREN = "Children";	
-	private static final String NAMESPACES = "Namespaces";	
-	
-	////////////////////////////////////////////////////////////////////////////
-	// Tag Tests
-	////////////////////////////////////////////////////////////////////////////
-	private static void testTag() {	
+	private static final String NAMESPACES = "Namespaces";
+
+    @Test
+	public void testTag() {
 		out.println("Doing basic Tag tests...");
 		
 		// Test to make sure Tag ignores the order in which attributes are
 		// added.
-		out.println("    Making sure attributes are consistently ordered...");
-		Tag t1 = new Tag("test");
+		final Tag t1 = new Tag("test");
 		t1.setAttribute("foo", "bar");
 		t1.setAttribute("john", "doe");
-		
-		Tag t2 = new Tag("test");
+
+        final Tag t2 = new Tag("test");
 		t2.setAttribute("john", "doe");	
 		t2.setAttribute("foo", "bar");
 		
-		assertEquals(TAG, t1, t2);
-		
-		out.println("    Making sure tags with different structures return " +
-				"false from .equals...");
+		assertEquals("Tag should ignore the order in which attributes are added", t1, t2);
 		
 		t2.setValue("item");
-		assertNotEquals(TAG, t1, t2);
+		assertNotEquals("tags with different structures should return false from .equals()", t1, t2);
 		
 		t2.removeValue("item");
 		t2.setAttribute("another", "attribute");
-		assertNotEquals(TAG, t1, t2);
+		assertNotEquals("tags with different structures should return false from .equals()", t1, t2);
 		
-		out.println("    Checking attributes namespaces...");
+		out.println(" Checking attributes namespaces...");
 		
 		t2.setAttribute("name", "bill");
 		t2.setAttribute("private", "smoker", true);
 		t2.setAttribute("public", "hobby", "hiking");
 		t2.setAttribute("private", "nickname", "tubby");
-		
-		assertEquals(TAG, t2.getAttributesForNamespace("private"),
-				new TreeMap<String,Object>(
-						map("smoker",true,"nickname","tubby")
-						));
-	}	
-	
-	private static void testTagWriteParse(String fileName, Tag root)
-		throws SDLParseException {
-		
-		out.println("Doing Tag write/parse tests for file " + fileName + "...");
-		
-		// Write out the contents of a tag, read the output back in and
-		// test for equality.  This is a very rigorous test for any non-trivial
-		// file.  It tests the parsing, output, and .equals implementation.
-		out.println("    Write out the tag and read it back in...");
-		
-		assertEquals(TAG_WRITE_PARSE, root, new Tag("test")
-				.read(root.toString()).getChild("root"));
-		
-		
+
+        final SortedMap<String, Object> namespacedAttribs = t2.getAttributesForNamespace("private");
+
+        assertEquals(namespacedAttribs, new TreeMap<String,Object>(map("smoker", true, "nickname", "tubby")));
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
 	// Basic Types Tests
 	////////////////////////////////////////////////////////////////////////////
-	
-	private static void testStrings(Tag root) {
-		out.println("Doing String tests...");
-		out.println("    Doing basic tests including new line handling...");
+
+    @Test
+	public void testStrings() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        out.println("Doing String tests...");
+		out.println(" Doing basic tests including new line handling...");
+
 		assertEquals(STRING_DECLARATIONS, root.getChild("string1").getValue(), "hello");
 		assertEquals(STRING_DECLARATIONS, root.getChild("string2").getValue(), "hi");
 		assertEquals(STRING_DECLARATIONS, root.getChild("string3").getValue(), "aloha");
@@ -149,20 +118,25 @@ public class SdlTest {
 				"\\t \" \"\" ' ''");
 		assertEquals(STRING_DECLARATIONS, root.getChild("string10").getValue(), "escapes \"\\\n\t");
 		
-		out.println("    Checking unicode strings...");
+		out.println(" Checking unicode strings...");
 		assertEquals(STRING_DECLARATIONS, root.getChild("japanese").getValue(), "\u65e5\u672c\u8a9e");
 		assertEquals(STRING_DECLARATIONS, root.getChild("korean").getValue(), "\uc5ec\ubcf4\uc138\uc694");
 		assertEquals(STRING_DECLARATIONS, root.getChild("russian").getValue(),
 				"\u0437\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u043b\u0442\u0435");
 		
-		out.println("    More new line tests...");
-		assertContains(STRING_DECLARATIONS, (String)root.getChild("xml").getValue(),
-				"<text>Hi there!</text>");
+		out.println(" More new line tests...");
+        assertTrue(STRING_DECLARATIONS,
+                ((String)root.getChild("xml").getValue()).contains("<text>Hi there!</text>")
+        );
 		assertEquals(STRING_DECLARATIONS, root.getChild("line_test").getValue(),
 				"\nnew line above and below\n");
 	}
 
-	private static void testCharacters(Tag root) {		
+	@Test
+	public void testCharacters() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing character tests...");
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char1").getValue(), 'a');
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char2").getValue(), 'A');
@@ -172,38 +146,42 @@ public class SdlTest {
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char6").getValue(), '\'');
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char7").getValue(), '"');
 		
-		out.println("    Doing unicode character tests...");
+		out.println(" Doing unicode character tests...");
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char8").getValue(), '\u65e5');
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char9").getValue(), '\uc5ec');
 		assertEquals(CHARACTER_DECLARATIONS, root.getChild("char10").getValue(), '\u0437');
 	}
 
-	private static void testNumbers(Tag root) {		
+	@Test
+	public void testNumbers() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing number tests...");
 		
-		out.println("    Testing ints...");
+		out.println(" Testing ints...");
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("int1").getValue(), 0);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("int2").getValue(), 5);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("int3").getValue(), -100);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("int4").getValue(), 234253532);
 		
-		out.println("    Testing longs...");
+		out.println(" Testing longs...");
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("long1").getValue(), 0L);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("long2").getValue(), 5L);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("long3").getValue(), 5L);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("long4").getValue(), 3904857398753453453L);		
 		
-		out.println("    Testing floats...");
+		out.println(" Testing floats...");
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("float1").getValue(), 1F);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("float2").getValue(), .23F);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("float3").getValue(), -.34F);
 
-		out.println("    Testing doubles...");
+		out.println(" Testing doubles...");
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("double1").getValue(), 2D);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("double2").getValue(), -.234D);
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("double3").getValue(), 2.34D);
 		
-		out.println("    Testing decimals (BigDouble in Java)...");
+		out.println(" Testing decimals (BigDouble in Java)...");
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("decimal1").getValue(),
 				new BigDecimal("0"));
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("decimal2").getValue(),
@@ -211,8 +189,12 @@ public class SdlTest {
 		assertEquals(NUMBER_DECLARATIONS, root.getChild("decimal3").getValue(),
 				new BigDecimal("234535.3453453453454345345341242343"));		
 	}
-	
-	private static void testBooleans(Tag root) {		
+
+	@Test
+	public void testBooleans() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing boolean tests...");
 
 		assertEquals(BOOLEAN_DECLARATIONS, root.getChild("light-on").getValue(), true);
@@ -220,14 +202,22 @@ public class SdlTest {
 		assertEquals(BOOLEAN_DECLARATIONS, root.getChild("light1").getValue(), true);
 		assertEquals(BOOLEAN_DECLARATIONS, root.getChild("light2").getValue(), false);
 	}
-	
-	private static void testNull(Tag root) {		
+
+	@Test
+	public void testNull() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing null test...");
 
 		assertEquals(NULL_DECLARATION, root.getChild("nothing").getValue(), null);
 	}	
-	
-	private static void testDates(Tag root) {
+
+	@Test
+	public void testDates() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing date tests...");
 
 		assertEquals(DATE_DECLARATIONS, root.getChild("date1").getValue(),
@@ -240,7 +230,11 @@ public class SdlTest {
 				getDate(582,9,16));			
 	}
 
-	private static void testTimeSpans(Tag root) {
+	@Test
+	public void testTimeSpans() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root=new Tag("root").read(inputStream);
+
 		out.println("Doing time span tests...");
 
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time1").getValue(),
@@ -262,7 +256,7 @@ public class SdlTest {
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time9").getValue(),
 				new SDLTimeSpan(0,12,30,23,123));
 		
-		out.println("    Checking time spans with days...");
+		out.println(" Checking time spans with days...");
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time10").getValue(),
 				new SDLTimeSpan(34,12,30,23,100));	
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time11").getValue(),
@@ -270,14 +264,18 @@ public class SdlTest {
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time12").getValue(),
 				new SDLTimeSpan(5,12,30,23,123));
 		
-		out.println("    Checking negative time spans...");
+		out.println(" Checking negative time spans...");
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time13").getValue(),
 				new SDLTimeSpan(0,-12,-30,-23,-123));	
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time14").getValue(),
 				new SDLTimeSpan(-5,-12,-30,-23,-123));
 	}
-	
-	private static void testDateTimes(Tag root) {
+
+	@Test
+	public void testDateTimes() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root=new Tag("root").read(inputStream);
+
 		out.println("Doing date time tests...");
 
 		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time1").getValue(),
@@ -293,40 +291,62 @@ public class SdlTest {
 		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time6").getValue(),
 				getDateTime(1882,5,2,12,30,23,123,null));	
 		
-		out.println("    Checking timezones...");
+		out.println(" Checking timezones...");
 		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time7").getValue(),
 				getDateTime(1882,5,2,12,30,23,123,"JST"));	
 		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time8").getValue(),
 				getDateTime(985,04,11,12,30,23,123,"PST"));	
 	}
-	
-	private static void testBinaries(Tag root) throws Exception {
+
+	@Test
+	public void testBinaries() throws Exception {
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root=new Tag("root").read(inputStream);
+
 		out.println("Doing binary tests...");
-		assertEquals(BINARY_DECLARATIONS, root.getChild("hi").getValue(),
-			"hi".getBytes("UTF8"));	
-		assertEquals(BINARY_DECLARATIONS, root.getChild("png").getValue(),
-			Base64.decode(
-				"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAKnRFWHRDcmVhdGlvbiBUaW1l" +
-				"AERpIDQgTXJ6IDIwMDMgMDA6MjQ6MDQgKzAxMDDdSQ6OAAAAB3RJTUUH0wMEAAcllPlrJgAA" +
-				"AAlwSFlzAAAK8AAACvABQqw0mAAAAARnQU1BAACxjwv8YQUAAADQSURBVHjaY2CgEDCCyZn/" +
-				"3YHkDhL1ejCkM+5kgXJ2zDQmXueShwwMh9+ALWSEGcCQfhZIvHlDnAk8PAwMHBxgJtyAa7bX" +
-				"UdT8/cvA8Ps3hP7zB4FBYn/+vGbweqyJaoCmpiaKASDFv35BNMBoZMzwGKKOidJYoNgAuBdm" +
-				"naXQgHRKDfgagxD89w8S+iAaFICwGIHFAgjrHUczAByySAaAMEgDLBphhv7/D8EYLgDZhAxA" +
-				"mkAKYYbAMMwwDAOQXYDuDXRXgDC6AR7SW8jITNQAACjZgdj4VjlqAAAAAElFTkSuQmCC"						
-			));		
+
+		assertTrue(BINARY_DECLARATIONS,
+                Arrays.equals(
+                        (byte[]) root.getChild("hi").getValue(),
+                        "hi".getBytes("UTF8")
+                )
+        );
+
+		assertTrue(BINARY_DECLARATIONS,
+                Arrays.equals(
+                        (byte[]) root.getChild("png").getValue(),
+                        Base64.decode(
+                                "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAKnRFWHRDcmVhdGlvbiBUaW1l" +
+                                        "AERpIDQgTXJ6IDIwMDMgMDA6MjQ6MDQgKzAxMDDdSQ6OAAAAB3RJTUUH0wMEAAcllPlrJgAA" +
+                                        "AAlwSFlzAAAK8AAACvABQqw0mAAAAARnQU1BAACxjwv8YQUAAADQSURBVHjaY2CgEDCCyZn/" +
+                                        "3YHkDhL1ejCkM+5kgXJ2zDQmXueShwwMh9+ALWSEGcCQfhZIvHlDnAk8PAwMHBxgJtyAa7bX" +
+                                        "UdT8/cvA8Ps3hP7zB4FBYn/+vGbweqyJaoCmpiaKASDFv35BNMBoZMzwGKKOidJYoNgAuBdm" +
+                                        "naXQgHRKDfgagxD89w8S+iAaFICwGIHFAgjrHUczAByySAaAMEgDLBphhv7/D8EYLgDZhAxA" +
+                                        "mkAKYYbAMMwwDAOQXYDuDXRXgDC6AR7SW8jITNQAACjZgdj4VjlqAAAAAElFTkSuQmCC"
+                        )
+                )
+        );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
 	// Structure Tests (values, attributes, children)
 	////////////////////////////////////////////////////////////////////////////
-	
-	public static void testEmptyTag(Tag root) {
+
+    @Test
+	public void testEmptyTag() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing empty tag test...");
 		
 		assertEquals(EMPTY_TAG, root.getChild("empty_tag"), new Tag("empty_tag"));
 	}
-	
-	public static void testValues(Tag root) {
+
+	@Test
+	public void testValues() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing values tests...");
 
 		assertEquals(VALUES, root.getChild("values1").getValues(), list("hi"));
@@ -366,8 +386,12 @@ public class SdlTest {
 		assertEquals(VALUES, root.getChild("values22").getValues(),
 				list("hi","ho","ho",5,"hi"));			
 	}
-	
-	public static void testAttributes(Tag root) throws Exception {
+
+	@Test
+	public void testAttributes() throws Exception {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
 		out.println("Doing attribute tests...");
 
 		assertEquals(ATTRIBUTES, root.getChild("atts1").getAttributes(),
@@ -387,11 +411,20 @@ public class SdlTest {
 		assertEquals(ATTRIBUTES, root.getChild("atts8").getAttributes(),
 				map("name","joe","size",5,"smoker",false,"text","hi","birthday",
 						getDate(1972,5,23)));
-		assertEquals(ATTRIBUTES, root.getChild("atts9").getAttribute("key"),
-				"mykey".getBytes("utf8"));
+
+        assertTrue(ATTRIBUTES,
+                Arrays.equals(
+                        (byte[]) root.getChild("atts9").getAttribute("key"),
+                        "mykey".getBytes("utf8")
+                )
+        );
 	}	
-	
-	public static void testValuesAndAttributes(Tag root) {
+
+	@Test
+	public void testValuesAndAttributes() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root=new Tag("root").read(inputStream);
+
 		out.println("Doing values and attributes tests...");
 
 		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts1")
@@ -441,8 +474,12 @@ public class SdlTest {
 			assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts9")
 					.getAttributes(), map("size", 5, "smoker", false));			
 	}	
-	
-	public static void testChildren(Tag root) {
+
+	@Test
+	public void testChildren() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root=new Tag("root").read(inputStream);
+
 		out.println("Doing children tests...");
 
 		Tag parent = root.getChild("parent");
@@ -475,8 +512,12 @@ public class SdlTest {
 		assertEquals(CHILDREN, matrix.getChildrenValues("content"),
 				list(list(1,2,3),list(4,5,6)));		
 	}
-	
-	public static void testNamespaces(Tag root) {
+
+	@Test
+	public void testNamespaces() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root=new Tag("root").read(inputStream);
+
 		out.println("Doing namespaces tests...");
 		
 		assertEquals(NAMESPACES, root.getChildrenForNamespace("person", true)
@@ -490,196 +531,51 @@ public class SdlTest {
 						"birthday", getDate(1976,04,18)));
 	}
 
-	@Test
-	public void go() {
-
-		out.println("Begin tests");
-
-		try { testTag(); } catch(Throwable e) {
-			reportException(TAG, e);
-		}		
-		
-		testBasicTypes();
-		testStructures();
-		
-		out.println();
-		
-		out.println("Checked " + assertCount + " assertions");
-		
-		if(failures==0)
-			out.println(":-) All tests succeeded!");
-		else
-			out.println("Summary: " + failures + (failures==1 ? " failure" :
-				" failures."));
-	}
-
-	private static void testBasicTypes() {
-		
+    @Test
+    public void testBasicTypes() throws IOException, SDLParseException {
 		out.println("Reading test_basic_types.sdl");
-		
-		Tag root = null;
-		
-		try {
-			final InputStream testData = SdlTest.class.getClassLoader().getResourceAsStream("test_basic_types.sdl");
-			root=new Tag("root").read(new InputStreamReader(testData, "UTF8"));
-		} catch(IOException ioe) {
-			reportException("Problem reading test_basic_types.sdl", ioe);
-		} catch(SDLParseException spe) {
-			reportException("Problem parsing test_basic_types.sdl", spe);
-		}
-		
-		out.println("Successfully read and parsed test_basic_types.sdl");	
-		
-		try { testTagWriteParse("test_basic_types.sdl", root); } catch(Throwable e) {
-			reportException(TAG_WRITE_PARSE, e);
-		}
-		
-		try { testStrings(root); } catch(Throwable e) {
-			reportException(STRING_DECLARATIONS, e);
-		}
-		
-		try { testCharacters(root); } catch(Throwable e) {
-			reportException(CHARACTER_DECLARATIONS, e);
-		}
-		
-		try { testNumbers(root); } catch(Throwable e) {
-			reportException(NUMBER_DECLARATIONS, e);
-		}		
 
-		try { testBooleans(root); } catch(Throwable e) {
-			reportException(BOOLEAN_DECLARATIONS, e);
-		}
-		
-		try { testNull(root); } catch(Throwable e) {
-			reportException(NULL_DECLARATION, e);
-		}
-		
-		try { testDates(root); } catch(Throwable e) {
-			reportException(DATE_DECLARATIONS, e);
-		}
-		
-		try { testTimeSpans(root); } catch(Throwable e) {
-			reportException(TIME_SPAN_DECLARATIONS, e);
-		}
-		
-		try { testDateTimes(root); } catch(Throwable e) {
-			reportException(DATE_TIME_DECLARATIONS, e);
-		}
-		
-		try { testBinaries(root); } catch(Throwable e) {
-			reportException(BINARY_DECLARATIONS, e);
-		}
+        final InputStreamReader inputStream = loadTestResource("test_basic_types.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        assertNotNull(root);
+
+        // Write out the contents of a tag, read the output back in and
+        // test for equality.  This is a very rigorous test for any non-trivial
+        // file.  It tests the parsing, output, and .equals implementation.
+        out.println(" Write out the tag and read it back in...");
+
+        final Tag clonedTag = new Tag("test").read(root.toString());
+        assertEquals(TAG_WRITE_PARSE, root, clonedTag.getChild("root"));
 	}
-	
-	private static void testStructures() {
+
+    @Test
+    public void testStructures() throws IOException, SDLParseException {
 		
 		out.println("Reading test_structures.sdl");
-		
-		Tag root = null;
-		
-		try {
-			root=new Tag("root").read(new InputStreamReader(
-					SdlTest.class.getClassLoader().getResourceAsStream("test_structures.sdl"),
-					"UTF8"));
-		} catch(IOException ioe) {
-			reportException("Problem reading test_structures.sdl", ioe);
-		} catch(SDLParseException spe) {
-			reportException("Problem parsing test_structures.sdl", spe);
-		}
-		
-		out.println("Successfully read and parsed test_structures.sdl");
 
-		try { testTagWriteParse("test_structures.sdl", root); } catch(Throwable e) {
-			reportException(TAG_WRITE_PARSE, e);
-		}		
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
 		
-		try { testEmptyTag(root); } catch(Throwable e) {
-			reportException(EMPTY_TAG, e);
-		}		
-		
-		try { testValues(root); } catch(Throwable e) {
-			reportException(VALUES, e);
-		}
-		
-		try { testAttributes(root); } catch(Throwable e) {
-			reportException(ATTRIBUTES, e);
-		}
-		
-		try { testValuesAndAttributes(root); } catch(Throwable e) {
-			reportException(VALUES_AND_ATTRIBUTES, e);
-		}	
-		
-		try { testChildren(root); } catch(Throwable e) {
-			reportException(CHILDREN, e);
-		}	
-		
-		try { testNamespaces(root); } catch(Throwable e) {
-			reportException(NAMESPACES, e);
-		}
+		out.println(" Successfully read and parsed test_structures.sdl");
+
+        assertNotNull(root);
+
+        // Write out the contents of a tag, read the output back in and
+        // test for equality.  This is a very rigorous test for any non-trivial
+        // file.  It tests the parsing, output, and .equals implementation.
+        out.println(" Write out the tag and read it back in...");
+
+        final Tag clonedTag = new Tag("test").read(root.toString());
+        assertEquals(TAG_WRITE_PARSE, root, clonedTag.getChild("root"));
 	}
-	
-	private static void assertEquals(String testName, Object o1, Object o2) {
-		assertCount++;
-		if(!equals(o1, o2)) {
-			failures++;
-			out.println("!! Failure: " + testName + " - " + format(o1) +
-					" does not equal " + format(o2));
-		}
-	}
-	
-	private static void assertNotEquals(String testName, Object o1, Object o2) {
-		assertCount++;
-		if(equals(o1, o2)) {
-			failures++;
-			out.println("!! Failure: " + testName + " - " + format(o1) +
-					" equals " + format(o2));
-		}	
-	}
-	
-	private static void assertContains(String testName, String o1, String o2) {
-		assertCount++;
-		if(o1==null) {
-			failures++;
-			out.println("!! Failure: " + testName +
-					" (contains type assertion) - first string argument " +
-					"is null");
-		} else if(o2==null) {
-			failures++;
-			out.println("!! Failure: " + testName + " (contains type " +
-					"assertion) - second string argument is null");
-		} else {
-			if(!o1.contains(o2)) {
-				failures++;
-				out.println("!! Failure: " + testName + " - " + o1 +
-						" does not contain " + o2);
-			}
-		}
-	}
-	
-	private static void assertTrue(String testName, String evalString,
-			boolean value) {
-		assertCount++;
-		if(!value) {
-			failures++;
-			out.println("!! Failure: " + testName + " - " + evalString +
-					" is false");			
-		}
-	}
-	
-	private static void assertFalse(String testName, String evalString,
-			boolean value) {
-		assertCount++;
-		if(value) {
-			failures++;
-			out.println("!! Failure: " + testName + " - " + evalString +
-					" is true");			
-		}
-	}
-	
-	private static void reportException(String testName, Throwable e) {
-		failures++;
-		out.println("!! Failure: " + testName + " - " + e.getMessage());
-	}
+
+    private InputStreamReader loadTestResource(final String testResourceFile) throws UnsupportedEncodingException {
+        final InputStream testData = this.getClass()
+                .getClassLoader()
+                .getResourceAsStream(testResourceFile);
+        return new InputStreamReader(testData, "UTF8");
+    }
 	
 	////////////////////////////////////////////////////////////////////////////
 	// Utility methods
@@ -779,17 +675,4 @@ public class SdlTest {
 			map.put(obs[i++], obs[i++]);		
 		return map;
 	}
-	
-	private static boolean equals(Object o1, Object o2) {
-		if (o1==null)
-			return o2==null;
-		else if(o2==null)
-			return false;
-		
-		if(o1.getClass().isArray() && o2.getClass().isArray() &&
-				o1.getClass().getComponentType()==byte.class)
-			return Arrays.equals((byte[])o1,(byte[])o2);
-		else
-			return o1.equals(o2);
-	}	
 }
