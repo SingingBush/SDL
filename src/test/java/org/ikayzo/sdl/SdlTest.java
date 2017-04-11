@@ -14,9 +14,10 @@
  * along with this program; if not, contact the Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package org.ikayzo.sdl.test;
+package org.ikayzo.sdl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -30,7 +31,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.ikayzo.codec.Base64;
-import org.ikayzo.sdl.*;
+import org.junit.Test;
 
 import static org.ikayzo.sdl.SDL.format;
 
@@ -41,7 +42,7 @@ import static org.ikayzo.sdl.SDL.format;
  * @author Daniel Leuck
  */
 @SuppressWarnings("unchecked")
-public class Test {
+public class SdlTest {
 
 	private static PrintWriter out = new PrintWriter(System.out, true);
 	private static int assertCount=0;
@@ -488,12 +489,9 @@ public class Test {
 				.getAttributesForNamespace("public"), map("name", "Akiko",
 						"birthday", getDate(1976,04,18)));
 	}
-	
-	public static void main(String[] args) {
-		go();
-	}
-	
-	public static void go() {
+
+	@Test
+	public void go() {
 
 		out.println("Begin tests");
 
@@ -522,9 +520,8 @@ public class Test {
 		Tag root = null;
 		
 		try {
-			root=new Tag("root").read(new InputStreamReader(
-					Test.class.getResourceAsStream("test_basic_types.sdl"),
-					"UTF8"));
+			final InputStream testData = SdlTest.class.getClassLoader().getResourceAsStream("test_basic_types.sdl");
+			root=new Tag("root").read(new InputStreamReader(testData, "UTF8"));
 		} catch(IOException ioe) {
 			reportException("Problem reading test_basic_types.sdl", ioe);
 		} catch(SDLParseException spe) {
@@ -582,7 +579,7 @@ public class Test {
 		
 		try {
 			root=new Tag("root").read(new InputStreamReader(
-					Test.class.getResourceAsStream("test_structures.sdl"),
+					SdlTest.class.getClassLoader().getResourceAsStream("test_structures.sdl"),
 					"UTF8"));
 		} catch(IOException ioe) {
 			reportException("Problem reading test_structures.sdl", ioe);
