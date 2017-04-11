@@ -8,6 +8,15 @@
 > 
 > <cite>sdlang.org</cite>
 
+### Usage
+
+To parse an SDL file simply create an InputStreamReader and pass it into the constructor of Parser:
+
+```Java
+final InputStream inputStream = new FileInputStream("c:\\data\\myfile.sdl");
+final Reader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+final List<Tag> tags = new Parser(inputStreamReader).parse();
+```
 
 ### Forked from [ikayzo/SDL](https://github.com/ikayzo/SDL):
 
