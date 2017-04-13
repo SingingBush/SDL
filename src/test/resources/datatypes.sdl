@@ -1,0 +1,28 @@
+// Strings
+"String \"with escape support\""
+`String "without escape support"`
+
+// Numbers
+10    // 32-bit integer
+10.5  // 64-bit float (double)
+10L   // 64-bit integer
+10BD  // 128-bit integer
+10.5f // 32-bit float
+
+// Boolean and null values
+true  // boolean true
+false // boolean false
+on    // boolean true
+off   // boolean false
+null  // a null value
+
+// Date/time formats
+2015/12/06 12:00:00.000-UTC // Date/time value (UTC timezone)
+2015/12/06 12:00:00.000     // Date/time value (local time)
+2015/12/06                  // Date value
+12:14:34     // Duration: 12 hours, 14 minutes, 34 seconds
+12:14:34.123 // 12 h, 14 min, 34 s, 123 ms
+2d:12:14:34  // 2 days, 12 h, 14 min, 34 s
+
+// Binary data (Base64 encoded)
+[sdf789GSfsb2+3324sf2]

@@ -69,7 +69,17 @@ class Parser {
 				parseException("No opening block ({) for close block (}).",
 						toks.get(0).line, toks.get(0).position);
 			} else {
-				tags.add(constructTag(toks));
+				List<Token> tokens = new ArrayList<Token>(size);
+				for (final Token t : toks) {
+					tokens.add(t);
+					if(Type.SEMICOLON.equals(t.type)) {
+						tags.add(constructTag(tokens));
+						tokens = new ArrayList<Token>(size);
+					}
+				}
+				if(!tokens.isEmpty()) {
+					tags.add(constructTag(tokens));
+				}
 			}
 		}
 		
@@ -389,7 +399,7 @@ class Parser {
 			} else if(c=='\'') {	
 				// handle character literals				
 				handleCharacterLiteral();
-			} else if("{}=:".indexOf(c)!=-1) {
+			} else if("{}=:;".indexOf(c)!=-1) {
 				// handle punctuation
 				toks.add(new Token(""+c, lineNumber, pos));
 				sb=null;
@@ -433,6 +443,14 @@ class Parser {
 			} else if(Character.isJavaIdentifierStart(c)) {
 				// handle identifiers
 				handleIdentifier();
+			} else if(c==';') {
+//				if( (pos+1) < lineLength ) {
+////					toks.add(new Token(""+c, lineNumber, pos));
+////					sb=null;
+//					pos++; // skip over it
+//				} else {
+//					break; // ignore it
+//				}
 			} else {
 				parseException("Unexpected character \"" + c + "\".)",
 						lineNumber, pos);
@@ -885,7 +903,7 @@ class Parser {
 		IDENTIFIER,
 		
 		// punctuation
-		COLON, EQUALS, START_BLOCK, END_BLOCK,
+		COLON, SEMICOLON, EQUALS, START_BLOCK, END_BLOCK,
 		
 		// literals
 		STRING, CHARACTER, BOOLEAN, NUMBER, DATE, TIME, BINARY, NULL
@@ -990,6 +1008,7 @@ class Parser {
 						case '}': type=Type.END_BLOCK; break;
 						case '=': type=Type.EQUALS; break;
 						case ':': type=Type.COLON; break;
+						case ';': type=Type.SEMICOLON; break;
 					}	
 				}
 			} catch(IllegalArgumentException iae) {
