@@ -85,10 +85,16 @@ public class SdlTest {
         final List<Tag> tags = new Parser(inputStream).parse();
 
         assertFalse(tags.isEmpty());
-        assertEquals(6, tags.size());
+        assertEquals(7, tags.size());
 		final Tag tag = new Tag("title");
 		tag.addValue("Some title");
 		assertTrue(tags.contains(tag));
+
+		assertTrue(tags.contains(new Tag("this-is_a.valid$tag-name")));
+
+		// todo: fix the namespaced tags
+//		assertTrue(tags.contains(new Tag("renderer:options")));
+//		assertTrue(tags.contains(new Tag("physics:options")));
     }
 
 	@Test

@@ -433,14 +433,13 @@ class Parser {
 				// backslash line continuation outside of a String literal
 				// can only occur at the end of a line
 				handleLineContinuation();
-			} else if("0123456789-.".indexOf(c)!=-1) {
-				if(c=='-' && (pos+1)<lineLength &&
-						line.charAt(pos+1)=='-')
+			} else if("0123456789-.".indexOf(c) != -1) {
+				if(c=='-' && (pos+1) < lineLength && line.charAt(pos+1)=='-') {
 					break;
-				
+				}
 				// handle numbers, dates, and time spans
 				handleNumberDateOrTimeSpan();
-			} else if(Character.isJavaIdentifierStart(c)) {
+			} else if( String.valueOf(c).matches("(\\w|\\n|-|_|\\.|\\$)") ) {
 				// handle identifiers
 				handleIdentifier();
 			} else if(c==';') {
@@ -818,7 +817,7 @@ class Parser {
 		for(;pos<lineLength; ++pos) {
 			c=line.charAt(pos);
 			
-			if(Character.isJavaIdentifierPart(c) || c=='-') {
+			if( String.valueOf(c).matches("(\\w|\\n|-|_|\\.|\\$)") ) {
 				sb.append(c);
 			} else {
 				pos--;
@@ -953,11 +952,11 @@ class Parser {
 	 * @author Daniel Leuck
 	 */
 	class Token {		
-		Type type; 
-		String text;
-		int line;
-		int position;
-		int size;
+		Type type;
+		private final String text;
+		private final int line;
+		private final int position;
+		private final int size;
 		Object object;
 		
 		boolean punctuation;

@@ -5,7 +5,7 @@ title "Some title";
 title "Some title"; author "Peter Parker"
 
 // Tags may contain certain non-alphanumeric characters
-//this-is_a.valid$tag-name
+this-is_a.valid$tag-name
 
 // Namespaces are supported
 renderer:options "invisible"

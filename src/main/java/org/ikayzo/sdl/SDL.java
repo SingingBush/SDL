@@ -251,14 +251,16 @@ public class SDL {
 					"an underscore (_).");	
 		
 		int identifierSize=identifier.length();
-		for(int i=1; i<identifierSize; i++)
-			if(!Character.isJavaIdentifierPart(identifier.charAt(i)) && 
-					identifier.charAt(i)!='-')
-				throw new IllegalArgumentException("'" + identifier.charAt(i) + 
+		for(int i=1; i<identifierSize; i++) {
+			final char c = identifier.charAt(i);
+			if(!String.valueOf(c).matches("(\\w|\\n|-|_|\\.|\\$)")) {
+				throw new IllegalArgumentException("'" + c +
 						"' is not a legal character for an SDL identifier. " +
 						"SDL Identifiers must start with a unicode letter or " +
 						"underscore (_) followed by 0 or more unicode " +
-						"letters, digits, underscores (_), or dashes (-)");					
+						"letters, digits, underscores (_), or dashes (-)");
+			}
+		}
 	}
 
 	/**
