@@ -340,13 +340,10 @@ public class Tag implements Serializable {
 	
 	private List values = new ArrayList();
 	private List valuesView = Collections.unmodifiableList(values);
-	private Map<String,String> attributeToNamespace =
-		new HashMap<String,String>(); 
-	private Map<String,String> attributeToNamespaceView =
-		Collections.unmodifiableMap(attributeToNamespace);
+	private Map<String,String> attributeToNamespace = new HashMap<String,String>();
+	private Map<String,String> attributeToNamespaceView = Collections.unmodifiableMap(attributeToNamespace);
 	private SortedMap<String,Object> attributes = new TreeMap<String,Object>();
-	private SortedMap<String,Object> attributesView =
-		Collections.unmodifiableSortedMap(attributes);
+	private SortedMap<String,Object> attributesView = Collections.unmodifiableSortedMap(attributes);
 	private List<Tag> children = new ArrayList<Tag>();	
 	private List<Tag> childrenView = Collections.unmodifiableList(children);
 	
@@ -379,8 +376,7 @@ public class Tag implements Serializable {
 		this.namespace=namespace;
 		
 		if(name==null || name.trim().length()==0)
-			throw new IllegalArgumentException("Tag name cannot be null or " +
-					"empty.");
+			throw new IllegalArgumentException("Tag name cannot be null or empty.");
 		SDL.validateIdentifier(name);		
 		this.name=name;
 	}	
@@ -738,7 +734,7 @@ public class Tag implements Serializable {
 	 * Returns an immutable view of all the attributes in the given
 	 * namespace.
 	 *
-	 * @param namespace
+	 * @param namespace The namespace to search
 	 * @return An immutable view of all the attributes in the given
 	 *         namespace.
 	 */

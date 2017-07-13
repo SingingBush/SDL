@@ -75,7 +75,7 @@
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.3.0</version>
                 <!--<configuration>-->
-                    <!--<repoToken> HANDLED BY TRAVIS ENVIRONEMTN VARIABLE </repoToken>-->
+                    <!--<repoToken> HANDLED BY TRAVIS ENVIRONMENT VARIABLE </repoToken>-->
                 <!--</configuration>-->
             </plugin>
         </plugins>
