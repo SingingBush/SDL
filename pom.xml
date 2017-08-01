@@ -9,6 +9,48 @@
     <version>1.4.0-SNAPSHOT</version>
     <name>SDL</name>
     <description>Support for SDLang (Simple Declarative Language)</description>
+    <url>https://github.com/SingingBush/SDL</url>
+    <inceptionYear>2011</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Daniel Leuck</name>
+            <email>support@ikayzo.com</email>
+            <organization>ikayzo</organization>
+            <organizationUrl>http://ikayzo.com</organizationUrl>
+            <roles>
+                <role>original author</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Samael Bate</name>
+            <email>samael@singingbush.com</email>
+            <organization>SingingBush</organization>
+            <organizationUrl>http://singingbush.com</organizationUrl>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/SingingBush/SDL.git</connection>
+        <developerConnection>scm:git:ssh://github.com:SingingBush/SDL.git</developerConnection>
+        <url>https://github.com/SingingBush/SDL/tree/master</url>
+    </scm>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/SingingBush/SDL/issues</url>
+    </issueManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

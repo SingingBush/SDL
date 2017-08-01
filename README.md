@@ -26,8 +26,11 @@ Since then there's been no activity and it seems that issues are ignored. Even t
 
 The project seemed to be abandoned so I've forked it with the initial goal of
 
-- publishing build artifacts to maven
-- enable continuous integration
-- keep project alive
+- [x] Adding more unit tests
+- [x] Enabling continuous integration using [travis-ci.org](travis-ci.org)
+- [x] Reporting on Test Coverage using [coveralls.io](coveralls.io)
+- [x] Fixing existing bugs
+- [ ] Publishing build artifacts to maven
+- [ ] Potentially re-writing
 
-Daniel Leuck, the original author, licensed the source as GPL v2.1
+Daniel Leuck, the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
