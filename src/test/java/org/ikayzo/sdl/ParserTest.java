@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -53,9 +54,13 @@ public class ParserTest {
 
         assertTrue(tags.contains(new Tag("this-is_a.valid$tag-name")));
 
-        // todo: fix the namespaced tags
-//		assertTrue(tags.contains(new Tag("renderer:options")));
-//		assertTrue(tags.contains(new Tag("physics:options")));
+        final Tag rendererOpts = new Tag("renderer", "options");
+        rendererOpts.setValue("invisible");
+        assertTrue(tags.contains(rendererOpts));
+
+        final Tag physicsOpts = new Tag("physics", "options");
+        physicsOpts.setValue("nocollide");
+        assertTrue(tags.contains(physicsOpts));
     }
 
     @Test
@@ -66,6 +71,24 @@ public class ParserTest {
 
         assertFalse(tags.isEmpty());
         assertEquals(6, tags.size());
+
+        // bookmarks 12 15 188 1234
+        final Tag bookmarks = tags.get(1);
+        assertEquals(4, bookmarks.getValues().size());
+
+        // author "Peter Parker" email="peter@example.org" active=true
+        final Tag author = tags.get(2);
+        assertEquals("author", author.getName());
+        assertEquals("Peter Parker", author.getValue());
+        assertEquals("peter@example.org", author.getAttribute("email"));
+        assertEquals(true, author.getAttribute("active"));
+
+        // namespaced
+        final Tag contents = tags.get(3);
+        assertEquals("contents", contents.getName());
+        final Tag firstSection = contents.getChildren("section").get(0);
+        assertEquals("First section", firstSection.getValue());
+        assertEquals(2, firstSection.getChildren().size());
     }
 
     @Test
