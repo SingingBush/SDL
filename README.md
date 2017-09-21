@@ -34,3 +34,5 @@ The project seemed to be abandoned so I've forked it with the initial goal of
 - [ ] Potentially re-writing
 
 Daniel Leuck, the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
+
+[![Sponsor](https://app.codesponsor.io/embed/1kT3Y5i6uwpQfj6LFvEdFfGi/SingingBush/SDL.svg)](https://app.codesponsor.io/link/1kT3Y5i6uwpQfj6LFvEdFfGi/SingingBush/SDL)
