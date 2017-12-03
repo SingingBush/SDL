@@ -5,12 +5,11 @@ dist: trusty
 jobs:
   include:
     - stage: Build using various JDK versions
-        jdk:
-          - oraclejdk6
-          - oraclejdk7
-          - oraclejdk8
-          - oraclejdk9
-          - openjdk7
+      jdk: oraclejdk6
+    - jdk: oraclejdk7
+    - jdk: oraclejdk8
+    - jdk: oraclejdk9
+    - jdk: openjdk7
     - stage: Test Coverage
-        jdk: oraclejdk8
-        after_success: mvn clean test jacoco:report coveralls:report
+      jdk: oraclejdk8
+      after_success: mvn clean test jacoco:report coveralls:report
