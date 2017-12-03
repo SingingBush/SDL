@@ -6,7 +6,7 @@
 
     <groupId>org.ikayzo</groupId>
     <artifactId>sdl</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.0</version>
     <name>SDL</name>
     <description>Support for SDLang (Simple Declarative Language)</description>
     <url>https://github.com/SingingBush/SDL</url>
