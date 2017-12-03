@@ -5,9 +5,7 @@ dist: trusty
 jobs:
   include:
     - stage: Build using various JDK versions
-      jdk: oraclejdk6
-    - jdk: oraclejdk7
-    - jdk: oraclejdk8
+      jdk: oraclejdk8
     - jdk: oraclejdk9
     - jdk: openjdk7
     - stage: Test Coverage
