@@ -2,8 +2,8 @@
  * Simple Declarative Language (SDL) for Java
  * Copyright 2005 Ikayzo, inc.
  *
- * This program is free software. You can distribute or modify it under the 
- * terms of the GNU Lesser General Public License version 2.1 as published by  
+ * This program is free software. You can distribute or modify it under the
+ * terms of the GNU Lesser General Public License version 2.1 as published by
  * the Free Software Foundation.
  *
  * This program is distributed AS IS and WITHOUT WARRANTY. OF ANY KIND,
@@ -20,22 +20,22 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.singingbush.codec.Base64;
+import java.util.Base64;
 
 /**
  * The SDL parser.
- * 
+ *
  * @author Daniel Leuck
  */
 class Parser {
-	
+
 	private final BufferedReader reader;
 	private String line;
 	private List<Token> toks;
 	private StringBuilder sb;
 	private boolean startEscapedQuoteLine;
 	private int lineNumber=-1, pos=0, lineLength=0, tokenStart=0;
-	
+
 	/**
 	 * Create an SDL parser
 	 */
@@ -71,13 +71,13 @@ class Parser {
 	 */
 	List<Tag> parse() throws IOException,
 		SDLParseException {
-		
+
 		List<Tag> tags = new ArrayList<Tag>();
 		List<Token> toks;
-		
+
 		while((toks=getLineTokens())!=null) {
 			int size = toks.size();
-			
+
 			if(toks.get(size-1).type==Type.START_BLOCK) {
 				Tag t = constructTag(toks.subList(0, size-1));
 				addChildren(t);
@@ -99,17 +99,17 @@ class Parser {
 				}
 			}
 		}
-		
+
 		reader.close();
-		
+
 		return tags;
 	}
-	
+
 	private void addChildren(Tag parent) throws SDLParseException, IOException {
 		List<Token> toks;
 		while((toks=getLineTokens())!=null) {
 			int size = toks.size();
-			
+
 			if(toks.get(0).type==Type.END_BLOCK) {
 				return;
 			} else if(toks.get(size-1).type==Type.START_BLOCK) {
@@ -119,61 +119,61 @@ class Parser {
 			} else {
 				parent.addChild(constructTag(toks));
 			}
-		}		
-		
+		}
+
 		// we have to use -2 for position rather than -1 for unknown because
 		// the parseException method adds 1 to line and position
 		parseException("No close block (}).", lineNumber, -2);
 	}
-	
+
 	/**
 	 * Construct a tag (but not its children) from a string of tokens
-	 * 
-	 * @throws SDLParseException 
+	 *
+	 * @throws SDLParseException
 	 */
 	Tag constructTag(List<Token> toks) throws SDLParseException {
 		if(toks.isEmpty())
 			// we have to use -2 for position rather than -1 for unknown because
 			// the parseException method adds 1 to line and position
 			parseException("Internal Error: Empty token list", lineNumber, -2);
-			
+
 		Token t0 = toks.get(0);
-		
-		
+
+
 		if(t0.literal) {
 			toks.add(0, t0 = new Token("content", -1, -1));
 		} else if(!Type.IDENTIFIER.equals(t0.type)) {
 			expectingButGot("IDENTIFIER", "" + t0.type + " (" + t0.text + ")",
-					t0.line, t0.position);	
+					t0.line, t0.position);
 		}
-		
+
 		int size = toks.size();
-		
+
 		Tag tag = null;
-		
+
 		if(size == 1) {
 			tag = new Tag(t0.text);
 		} else {
 			int valuesStartIndex = 1;
-			
+
 			Token t1 = toks.get(1);
-			
+
 			if(Type.COLON.equals(t1.type)) {
 				if(size==2 || !Type.IDENTIFIER.equals(toks.get(2).type))
 					parseException("Colon (:) encountered in unexpected " +
 							"location.", t1.line, t1.position);
-				
+
 				Token t2 = toks.get(2);
 				tag = new Tag(t0.text,t2.text);
-				
+
 				valuesStartIndex = 3;
 			} else {
 				tag = new Tag(t0.text);
 			}
-				
+
 			// read values
 			int i =addTagValues(tag, toks, valuesStartIndex);
-			
+
 			// read attributes
 			if(i<size)
 				addTagAttributes(tag, toks, i);
@@ -181,26 +181,26 @@ class Parser {
 
 		return tag;
 	}
-	
+
 	/**
 	 * @return The position at the end of the value list
 	 */
 	private int addTagValues(Tag tag, List<Token> toks, int tpos)
 		throws SDLParseException {
-		
+
 		int size=toks.size(), i=tpos;
-		
+
 		for(;i<size;i++) {
 			Token t = toks.get(i);
 			if(t.literal) {
-				
+
 				// if a DATE token is followed by a TIME token combine them
 				if(Type.DATE.equals(t.type) && (i+1)<size && Type.TIME.equals(toks.get(i+1).type)) {
 
 					final Calendar dc = (Calendar)t.getObjectForLiteral();
 					TimeSpanWithZone tswz = (TimeSpanWithZone)
 						toks.get(i+1).getObjectForLiteral();
-					
+
 					if(tswz.getDays() != 0) {
 						tag.addValue(dc);
 						tag.addValue(new SDLTimeSpan(
@@ -208,25 +208,25 @@ class Parser {
 								tswz.getMinutes(), tswz.getSeconds(),
 								tswz.getMilliseconds()
 							));
-						
+
 						if(tswz.getTimeZone() != null)
 							parseException("TimeSpan cannot have a timezone",
 								t.line, t.position);
 					} else {
 						tag.addValue(combine(dc,tswz));
 					}
-					
+
 					i++;
 				} else {
 					Object v = t.getObjectForLiteral();
 					if(v instanceof TimeSpanWithZone) {
 						TimeSpanWithZone tswz = (TimeSpanWithZone)v;
-						
+
 						if(tswz.getTimeZone()!=null)
 							expectingButGot("TIME SPAN",
 								"TIME (component of date/time)", t.line,
 								    t.position);
-						
+
 						tag.addValue(new SDLTimeSpan(
 							tswz.getDays(), tswz.getHours(),
 							tswz.getMinutes(), tswz.getSeconds(),
@@ -242,41 +242,41 @@ class Parser {
 				expectingButGot("LITERAL or IDENTIFIER", t.type, t.line,
 						t.position);
 			}
-		}	
-		
+		}
+
 		return i;
 	}
-	
+
 	/**
 	 * Add attributes to the given tag
 	 */
 	private void addTagAttributes(Tag tag, List<Token> toks, int tpos)
 		throws SDLParseException {
-		
+
 		int i=tpos, size=toks.size();
-		
+
 		while(i<size) {
 			Token t = toks.get(i);
 			if(t.type!=Type.IDENTIFIER)
 				expectingButGot("IDENTIFIER", t.type, t.line, t.position);
 			String nameOrNamespace = t.text;
-			
+
 			if(i==size-1)
 				expectingButGot("\":\" or \"=\" \"LITERAL\"", "END OF LINE.",
 						t.line, t.position);
-			
+
 			t = toks.get(++i);
 			if(t.type==Type.COLON) {
 				if(i==size-1)
 					expectingButGot("IDENTIFIER", "END OF LINE", t.line,
 							t.position);
-				
+
 				t = toks.get(++i);
 				if(t.type!=Type.IDENTIFIER)
 					expectingButGot("IDENTIFIER", t.type, t.line,
 							t.position);
 				String name = t.text;
-				
+
 				if(i==size-1)
 					expectingButGot("\"=\"", "END OF LINE", t.line,
 							t.position);
@@ -284,49 +284,49 @@ class Parser {
 				if(t.type!=Type.EQUALS)
 					expectingButGot("\"=\"", t.type, t.line,
 							t.position);
-				
+
 				if(i==size-1)
 					expectingButGot("LITERAL", "END OF LINE", t.line,
 							t.position);
 				t = toks.get(++i);
 				if(!t.literal)
 					expectingButGot("LITERAL", t.type, t.line, t.position);
-				
+
 				if(t.type==Type.DATE && (i+1)<size &&
 						toks.get(i+1).type==Type.TIME) {
-					
+
 					Calendar dc = (Calendar)t.getObjectForLiteral();
 					TimeSpanWithZone tswz = (TimeSpanWithZone)
 						toks.get(i+1).getObjectForLiteral();
-					
+
 					if(tswz.getDays()!=0) {
 						expectingButGot("TIME (component of date/time) " +
 							"in attribute value", "TIME SPAN", t.line,
 							t.position);
-						
+
 					} else {
 						tag.setAttribute(nameOrNamespace, name,
-								combine(dc,tswz));	
+								combine(dc,tswz));
 					}
-					
+
 					i++;
 				} else {
 					Object v = t.getObjectForLiteral();
 					if(v instanceof TimeSpanWithZone) {
 						TimeSpanWithZone tswz = (TimeSpanWithZone)v;
-						
+
 						if(tswz.getTimeZone()!=null)
 							expectingButGot("TIME SPAN",
 								"TIME (component of date/time)", t.line,
 								    t.position);
-						
+
 						SDLTimeSpan ts = new SDLTimeSpan(
 							tswz.getDays(), tswz.getHours(),
 							tswz.getMinutes(), tswz.getSeconds(),
 							tswz.getMilliseconds());
-						
+
 						tag.setAttribute(nameOrNamespace, name,
-								ts);							
+								ts);
 					} else {
 						tag.setAttribute(nameOrNamespace, name,
 								v);
@@ -335,51 +335,51 @@ class Parser {
 			} else if(t.type==Type.EQUALS){
 				if(i==size-1)
 					expectingButGot("LITERAL", "END OF LINE", t.line,
-							t.position);	
+							t.position);
 				t = toks.get(++i);
 				if(!t.literal)
-					expectingButGot("LITERAL", t.type, t.line, t.position);	
-				
-				
+					expectingButGot("LITERAL", t.type, t.line, t.position);
+
+
 				if(t.type==Type.DATE && (i+1)<size &&
 						toks.get(i+1).type==Type.TIME) {
-				
+
 					Calendar dc = (Calendar)t.getObjectForLiteral();
 					TimeSpanWithZone tswz = (TimeSpanWithZone)
 						toks.get(i+1).getObjectForLiteral();
-					
+
 					if(tswz.getDays()!=0)
 						expectingButGot("TIME (component of date/time) " +
 							"in attribute value", "TIME SPAN", t.line,
 							t.position);
-					tag.setAttribute(nameOrNamespace, combine(dc,tswz));	
-					
+					tag.setAttribute(nameOrNamespace, combine(dc,tswz));
+
 					i++;
 				} else {
 					Object v = t.getObjectForLiteral();
 					if(v instanceof TimeSpanWithZone) {
 						TimeSpanWithZone tswz = (TimeSpanWithZone)v;
-						
+
 						if(tswz.getTimeZone()!=null)
 							expectingButGot("TIME SPAN",
 								"TIME (component of date/time)", t.line,
 								    t.position);
-						
+
 						SDLTimeSpan ts = new SDLTimeSpan(
 							tswz.getDays(), tswz.getHours(),
 							tswz.getMinutes(), tswz.getSeconds(),
 							tswz.getMilliseconds());
-						
-						tag.setAttribute(nameOrNamespace, ts);							
+
+						tag.setAttribute(nameOrNamespace, ts);
 					} else {
 						tag.setAttribute(nameOrNamespace, v);
-					}			
+					}
 				}
 			} else {
 				expectingButGot("\":\" or \"=\"", t.type, t.line,
-						t.position);	
+						t.position);
 			}
-			
+
 			i++;
 		}
 	}
@@ -387,7 +387,7 @@ class Parser {
 	/**
 	 * Get a line as tokens.  This method handles line continuations both
 	 * within and outside String literals.
-	 * 
+	 *
 	 * @return A logical line as a list of Tokens
 	 * @throws SDLParseException If the SDL input is malformed
 	 * @throws IOException If there is an IO problem reading the source
@@ -397,10 +397,10 @@ class Parser {
 		if(line==null)
 			return null;
 		toks = new ArrayList<Token>();
-		lineLength = line.length(); 
+		lineLength = line.length();
 		sb = null;
-		tokenStart=0;	
-		
+		tokenStart=0;
+
 		for(;pos<lineLength; pos++) {
 			char c=line.charAt(pos);
 
@@ -408,35 +408,35 @@ class Parser {
 				toks.add(new Token(sb.toString(), lineNumber, tokenStart));
 				sb=null;
 			}
-			
-			if(c=='"') {	
+
+			if(c=='"') {
 				// handle "" style strings including line continuations
 				handleDoubleQuoteString();
-			} else if(c=='\'') {	
-				// handle character literals				
+			} else if(c=='\'') {
+				// handle character literals
 				handleCharacterLiteral();
 			} else if("{}=:;".indexOf(c)!=-1) {
 				// handle punctuation
 				toks.add(new Token(""+c, lineNumber, pos));
 				sb=null;
-			} else if(c=='#') {	
+			} else if(c=='#') {
 				// handle hash comments
 				break;
-			} else if(c=='/') {	
+			} else if(c=='/') {
 				// handle /**/ and // style comments
-				
+
 				if((pos+1)<lineLength && line.charAt(pos+1)=='/')
 					break;
 				else
-					handleSlashComment();	
-			} else if(c=='`') {	
-				// handle multiline `` style strings				
+					handleSlashComment();
+			} else if(c=='`') {
+				// handle multiline `` style strings
 				handleBackQuoteString();
-			} else if(c=='[') {	
+			} else if(c=='[') {
 				// handle binary literals
-				
+
 				handleBinaryLiteral();
-			
+
 			} else if(c==' ' || c=='\t') {
 				// eat whitespace
 				while((pos+1)<lineLength && " \t".indexOf(line.charAt(pos+1))!=-1) {
@@ -444,7 +444,7 @@ class Parser {
 				}
 			} else if(c=='\\') {
 				// line continuations (outside a string literal)
-				
+
 				// backslash line continuation outside of a String literal
 				// can only occur at the end of a line
 				handleLineContinuation();
@@ -469,22 +469,22 @@ class Parser {
 				parseException("Unexpected character \"" + c + "\".)", lineNumber, pos);
 			}
 		}
-		
+
 		if(sb!=null) {
 			toks.add(new Token(sb.toString(), lineNumber, tokenStart));
 		}
-		
+
 		// if toks are empty, try another line
 		// this seems a bit dangerous, but eventually we should get a null line
 		// which serves as a termination condition for the recursion
 		while(toks!=null && toks.isEmpty())
 			toks=getLineTokens();
-		
+
 		return toks;
 	}
-	
+
 	private void addEscapedCharInString(char c) throws SDLParseException {
-		
+
 		switch(c) {
 			case '\\':
 			case '"':
@@ -495,24 +495,24 @@ class Parser {
 				break;
 			case 'r':
 				sb.append('\r');
-				break;	
+				break;
 			case 't':
 				sb.append('\t');
-				break;								
+				break;
 			default:
 				parseException("Ellegal escape character in " +
 						"string literal: \"" + c + "\".",
 						lineNumber, pos);
 		}
 	}
-	
+
 	private void handleDoubleQuoteString() throws SDLParseException, IOException {
 		boolean escaped=false;
-		startEscapedQuoteLine=false;	
-		
+		startEscapedQuoteLine=false;
+
 		sb = new StringBuilder("\"");
 		pos++;
-		
+
 		for(;pos<lineLength; pos++) {
 			char c=line.charAt(pos);
 
@@ -520,7 +520,7 @@ class Parser {
 				continue;
 			else
 				startEscapedQuoteLine=false;
-			
+
 			if(escaped) {
 				addEscapedCharInString(c);
 				escaped=false;
@@ -541,74 +541,72 @@ class Parser {
 				}
 			}
 		}
-		
+
 		if(sb!=null) {
 			String tokString = sb.toString();
 			if(tokString.length()>0 && tokString.charAt(0)=='"' &&
 					tokString.charAt(tokString.length()-1)!='"') {
 				parseException("String literal \"" + tokString +
 						"\" not terminated by end quote.", lineNumber,
-						line.length());	
+						line.length());
 			} else if(tokString.length()==1 && tokString.charAt(0)=='"') {
 				parseException("Orphan quote (unterminated " +
-						"string)", lineNumber, line.length());	
+						"string)", lineNumber, line.length());
 			}
-		}	
+		}
 	}
-	
+
 	private void handleEscapedDoubleQuotedString() throws SDLParseException, IOException {
 		if(pos==lineLength-1) {
 			line = readLine();
 			if(line==null) {
 				parseException("Escape at end of file.", lineNumber, pos);
 			}
-			
-			lineLength = line.length(); 
+
+			lineLength = line.length();
 			pos=-1;
 			startEscapedQuoteLine=true;
 		} else {
 			// consume whitespace
 			int j=pos+1;
-			while(j<lineLength &&
-					" \t".indexOf(line.charAt(j))!=-1) j++;
-			
+			while(j<lineLength && " \t".indexOf(line.charAt(j))!=-1) j++;
+
 			if(j==lineLength) {
 				line = readLine();
 				if(line==null) {
-					parseException("Escape at end of file.",
-							lineNumber, pos);
+					parseException("Escape at end of file.", lineNumber, pos);
 				}
-					
-				lineLength = line.length(); 
+
+				lineLength = line.length();
 				pos=-1;
 				startEscapedQuoteLine=true;
-	
+
 			} else {
 				parseException("Malformed string literal - " +
 						"escape followed by whitespace " +
 						"followed by non-whitespace.", lineNumber,
 						pos);
-			}		
+			}
 		}
-	}	
-	
+	}
+
 	private void handleCharacterLiteral() throws SDLParseException {
 		if(pos==lineLength-1)
 			parseException("Got ' at end of line", lineNumber, pos);
-		
+
 		pos++;
-		
+
 		char c2 = line.charAt(pos);
 		if(c2=='\\') {
-			
+
 			if(pos==lineLength-1)
 				parseException("Got '\\ at end of line", lineNumber, pos);
 			pos++;
 			char c3 = line.charAt(pos);
-			
+
 			if(pos==lineLength-1)
 				parseException("Got '\\" + c3 + " at end of line", lineNumber, pos);
-			
+
 			if(c3=='\\') {
 				toks.add(new Token("'\\'", lineNumber, pos));
 			} else if(c3=='\'') {
@@ -622,11 +620,11 @@ class Parser {
 			} else {
 				parseException("Illegal escape character " + line.charAt(pos), lineNumber, pos);
 			}
-			
+
 			pos++;
 			if(line.charAt(pos)!='\'')
 				expectingButGot("single quote (')", "\"" + line.charAt(
-						pos) + "\"", lineNumber, pos);		
+						pos) + "\"", lineNumber, pos);
 		} else {
 			toks.add(new Token("'" +  c2 + "'", lineNumber, pos));
 			if(pos==lineLength-1)
@@ -634,17 +632,17 @@ class Parser {
 			pos++;
 			if(line.charAt(pos)!='\'')
 				expectingButGot("quote (')", "\"" + line.charAt(pos) +
-						"\"", lineNumber, pos);		
+						"\"", lineNumber, pos);
 		}
 	}
-	
+
 	private void handleSlashComment() throws SDLParseException, IOException {
 		if(pos==lineLength-1) {
 			parseException("Got slash (/) at end of line.", lineNumber, pos);
 		}
-		
+
 		if(line.charAt(pos+1)=='*') {
-	
+
 			int endIndex = line.indexOf("*/", pos+1);
 			if(endIndex!=-1) {
 				// handle comment on same line
@@ -652,61 +650,60 @@ class Parser {
 			} else {
 				// handle multiline comments
 				inner: while(true) {
-					line = readRawLine();							
+					line = readRawLine();
 					if(line==null) {
 						parseException("/* comment not terminated.", lineNumber, -2);
 					}
-					
+
 					endIndex = line.indexOf("*/");
-	
+
 					if(endIndex!=-1) {
-						lineLength = line.length(); 
+						lineLength = line.length();
 						pos=endIndex+1;
 						break inner;
 					}
-				}	
+				}
 			}
 		} else if(line.charAt(pos+1)=='/') {
-			parseException("Got slash (/) in unexpected location.", 
+			parseException("Got slash (/) in unexpected location.",
 					lineNumber, pos);
 		}
 	}
-	
+
 	private void handleBackQuoteString() throws SDLParseException, IOException {
 		int endIndex = line.indexOf("`", pos+1);
-		
+
 		if(endIndex != -1) {
 			// handle end quote on same line
 			toks.add(new Token(line.substring(pos, endIndex+1), lineNumber, pos));
 			sb = null;
-			
+
 			pos = endIndex;
 		} else {
-			
+
 			sb = new StringBuilder(line.substring(pos) + "\n");
 			int start = pos;
 			// handle multiline quotes
 			inner: while(true) {
 				line = readRawLine();
 				if(line==null) {
-					parseException("` quote not terminated.",
-						lineNumber, -2);
+					parseException("` quote not terminated.", lineNumber, -2);
 				}
-				
+
 				endIndex = line.indexOf("`");
 				if(endIndex!=-1) {
 					sb.append(line.substring(0, endIndex+1));
-					
+
 					line=line.trim();
-					lineLength = line.length(); 
-					
+					lineLength = line.length();
+
 					pos=endIndex;
 					break inner;
 				} else {
 					sb.append(line + "\n");
 				}
-			}	
-			
+			}
+
 			toks.add(new Token(sb.toString(), lineNumber, start));
 			sb=null;
 		}
@@ -714,44 +711,42 @@ class Parser {
 
 	private void handleBinaryLiteral() throws SDLParseException, IOException {
 		int endIndex = line.indexOf("]", pos+1);
-		
+
 		if(endIndex != -1) {
 			// handle end quote on same line
 			toks.add(new Token(line.substring(pos, endIndex+1), lineNumber, pos));
 			sb = null;
-			
+
 			pos=endIndex;
-		} else {					
-			sb = new StringBuilder(line.substring(pos) +
-					"\n");
+		} else {
+			sb = new StringBuilder(line.substring(pos) + "\n");
 			int start = pos;
 			// handle multiline quotes
 			inner: while(true) {
 				line = readRawLine();
 				if(line==null) {
-					parseException("[base64] binary literal not " +
-							"terminated.", lineNumber, -2);
+					parseException("[base64] binary literal not terminated.", lineNumber, -2);
 				}
-				
+
 				endIndex = line.indexOf("]");
 				if(endIndex!=-1) {
 					sb.append(line.substring(0, endIndex+1));
-					
+
 					line=line.trim();
-					lineLength = line.length(); 
-					
+					lineLength = line.length();
+
 					pos=endIndex;
 					break inner;
 				} else {
 					sb.append(line + "\n");
 				}
-			}	
-			
+			}
+
 			toks.add(new Token(sb.toString(), lineNumber, start));
 			sb=null;
 		}
 	}
-	
+
 	// handle a line continuation (not inside a string)
 	private void handleLineContinuation() throws SDLParseException, IOException {
 		if(line.substring(pos+1).trim().length()!=0) {
@@ -761,20 +756,20 @@ class Parser {
 			if(line == null) {
 				parseException("Line continuation at end of file.", lineNumber, pos);
 			}
-				
-			lineLength = line.length(); 
-			pos=-1;				
+
+			lineLength = line.length();
+			pos=-1;
 		}
 	}
-	
+
 	private void handleNumberDateOrTimeSpan() throws SDLParseException {
 		tokenStart = pos;
 		sb = new StringBuilder();
 		char c;
-	
+
 		for(;pos<lineLength; ++pos) {
 			c=line.charAt(pos);
-			
+
 			if("0123456789.-+:abcdefghijklmnopqrstuvwxyz".indexOf(
 					Character.toLowerCase(c))!=-1) {
 				sb.append(c);
@@ -785,19 +780,19 @@ class Parser {
 				break;
 			}
 		}
-		
+
 		toks.add(new Token(sb.toString(), lineNumber, tokenStart));
 		sb=null;
 	}
-	
+
 	private void handleIdentifier() throws SDLParseException {
 		tokenStart=pos;
 		sb=new StringBuilder();
 		char c;
-		
+
 		for(;pos<lineLength; ++pos) {
 			c=line.charAt(pos);
-			
+
 			if( String.valueOf(c).matches("(\\w|\\n|-|_|\\.|\\$)") ) {
 				sb.append(c);
 			} else {
@@ -805,11 +800,11 @@ class Parser {
 				break;
 			}
 		}
-		
+
 		toks.add(new Token(sb.toString(), lineNumber, tokenStart));
 		sb=null;
 	}
-	
+
 	/**
 	 * Close the reader and throw a SDLParseException
 	 */
@@ -817,12 +812,12 @@ class Parser {
 		try {
 			reader.close();
 		} catch(final IOException ioe) { /* no recourse */ }
-		
+
 		// We add one because editors typically start with line 1 and position 1
 		// rather than 0...
-		throw new SDLParseException(description, line+1, position+1);			
+		throw new SDLParseException(description, line+1, position+1);
 	}
-	
+
 	/**
 	 * Close the reader and throw a SDLParseException using the format
 	 * Was expecting X but got Y.
@@ -834,11 +829,11 @@ class Parser {
 		parseException(
 				String.format("Was expecting %s but got %s", expecting, String.valueOf(got)),
 				line, position);
-	}	
-	
+	}
+
 	/**
 	 * Skips comment lines and blank lines.
-	 * 
+	 *
 	 * @return the next line or null at the end of the file.
 	 */
 	String readLine() throws IOException {
@@ -848,24 +843,24 @@ class Parser {
 		if(line==null)
 			return null;
 		lineNumber++;
-		
-		String tLine = line.trim();	
+
+		String tLine = line.trim();
 
 		while(tLine.startsWith("#") || tLine.length()==0) {
 			line = reader.readLine();
 			if(line==null)
 				return null;
-			
+
 			lineNumber++;
-			tLine = line.trim();	
+			tLine = line.trim();
 		}
-		
+
 		return line;
 	}
-	
+
 	/**
 	 * Reads a "raw" line including lines with comments and blank lines
-	 * 
+	 *
 	 * @return the next line or null at the end of the file.
 	 */
 	String readRawLine() throws IOException {
@@ -875,61 +870,61 @@ class Parser {
 		if(line==null)
 			return null;
 		lineNumber++;
-		
+
 		return line;
-	}	
-	
+	}
+
 	enum Type {
 		IDENTIFIER,
-		
+
 		// punctuation
 		COLON, SEMICOLON, EQUALS, START_BLOCK, END_BLOCK,
-		
+
 		// literals
 		STRING, CHARACTER, BOOLEAN, NUMBER, DATE, TIME, BINARY, NULL
 	}
-	
+
 	/**
-	 * Combine a date only calendar with a TimeSpanWithZone to create a 
-	 * date-time calendar 
+	 * Combine a date only calendar with a TimeSpanWithZone to create a
+	 * date-time calendar
 	 */
-	private static Calendar combine(Calendar dc, TimeSpanWithZone tswz) {		
+	private static Calendar combine(Calendar dc, TimeSpanWithZone tswz) {
 		TimeZone tz = tswz.getTimeZone();
 		if(tz==null)
 			tz=TimeZone.getDefault();
-		
+
 		Calendar cc = new GregorianCalendar(tz);
-		
+
 		cc.set(Calendar.YEAR, dc.get(Calendar.YEAR));
 		cc.set(Calendar.MONTH, dc.get(Calendar.MONTH));
 		cc.set(Calendar.DAY_OF_MONTH, dc.get(Calendar.DAY_OF_MONTH));
-		
-		cc.set(Calendar.HOUR_OF_DAY, tswz.getHours());					
+
+		cc.set(Calendar.HOUR_OF_DAY, tswz.getHours());
 		cc.set(Calendar.MINUTE, tswz.getMinutes());
-		cc.set(Calendar.SECOND, tswz.getSeconds());					
+		cc.set(Calendar.SECOND, tswz.getSeconds());
 		cc.set(Calendar.MILLISECOND, tswz.getMilliseconds());
-		
+
 		// deal with calendar bug where fields are not
 		// marked as set unless you fetch that particular
 		// field
 		cc.get(Calendar.YEAR);
 		cc.get(Calendar.MONTH);
 		cc.get(Calendar.DAY_OF_MONTH);
-		
+
 		cc.get(Calendar.HOUR_OF_DAY);
 		cc.get(Calendar.MINUTE);
 		cc.get(Calendar.SECOND);
 		cc.get(Calendar.MILLISECOND);
-				
+
 		if(tz!=null)
 			cc.setTimeZone(tz);
-		
-		return cc;		
-	}	
-	
+
+		return cc;
+	}
+
 	/**
-	 * An SDL token.  
-	 * 
+	 * An SDL token.
+	 *
 	 * @author Daniel Leuck
 	 */
 	class Token {
@@ -946,13 +941,13 @@ class Parser {
 
 		Token(String text, int line, int position) throws SDLParseException {
 			this.text=text;
-			
+
 			// type=determineType();
-			
+
 			this.line=line;
 			this.position=position;
 			size=text.length();
-			
+
 			try {
 				if(text.startsWith("\"") || text.startsWith("`")) {
 					type=Type.STRING;
@@ -981,7 +976,7 @@ class Parser {
 					object=parseTimeSpanWithZone(text);
 				} else if("01234567890-.".indexOf(text.charAt(0))!=-1) {
 					type=Type.NUMBER;
-					object=Parser.parseNumber(text);				
+					object=Parser.parseNumber(text);
 				} else {
 					char c = text.charAt(0);
 					switch(c) {
@@ -990,12 +985,12 @@ class Parser {
 						case '=': type=Type.EQUALS; break;
 						case ':': type=Type.COLON; break;
 						case ';': type=Type.SEMICOLON; break;
-					}	
+					}
 				}
 			} catch(final IllegalArgumentException iae) {
 				throw new SDLParseException(iae.getMessage(), line, position);
 			}
-			
+
 			if(type == null) {
 				type = Type.IDENTIFIER;
 			}
@@ -1041,51 +1036,51 @@ class Parser {
 		Object getObjectForLiteral() {
 			return object;
 		}
-		
+
 		public String toString() {
 			return type + " " + text + " pos:" + position;
 		}
-		
+
 		// This special parse method is used only by the Token class for
 		// tokens which are ambiguously either a TimeSpan or the time component
 		// of a date/time type
 		TimeSpanWithZone parseTimeSpanWithZone(String text)
 			throws SDLParseException {
-			
+
 			int day=0; // optional (not allowed for date_time)
 			int hour=0; // mandatory
 			int minute=0; // mandatory
 			int second=0; // optional for date_time, mandatory for time span
 			int millisecond=0; // optional
-			
-			String timeZone = null;				
+
+			String timeZone = null;
 			String dateText = text;
-			
+
 			int dashIndex = dateText.indexOf("-",1);
 			if(dashIndex!=-1) {
 				timeZone=dateText.substring(dashIndex+1);
 				dateText=text.substring(0,dashIndex);
 			}
-			
+
 			String[] segments = dateText.split(":");
-			
+
 			// we know this is the time component of a date time type
 			// because the time zone has been set
-			if(timeZone!=null) {			
+			if(timeZone!=null) {
 				if(segments.length<2 || segments.length>3)
 					parseException("date/time format exception.  Must " +
 							"use hh:mm(:ss)(.xxx)(-z)", line, position);
 			} else {
 				if(segments.length<2 || segments.length>4)
 					parseException("Time format exception.  For time " +
-							"spans use (d:)hh:mm:ss(.xxx) and for the " + 
+							"spans use (d:)hh:mm:ss(.xxx) and for the " +
 							"time component of a date/time type use " +
 							"hh:mm(:ss)(.xxx)(-z)  If you use the day " +
 							"component of a time span make sure to " +
 							"prefix it with a lower case d", line,
-							position);	
+							position);
 			}
-			
+
 			try {
 				if(segments.length==4) {
 					String dayString = segments[0];
@@ -1093,35 +1088,35 @@ class Parser {
 						parseException("The day component of a time " +
 						    "span must end with a lower case d", line,
 						    position);
-					
+
 					day = Integer.parseInt(dayString.substring(0,
 							dayString.length()-1));
-					
+
 					hour=Integer.parseInt(segments[1]);
 					minute=Integer.parseInt(segments[2]);
-					
+
 					if(segments.length==4) {
 						String last = segments[3];
 						int dotIndex = last.indexOf(".");
-						
+
 						if(dotIndex==-1) {
 							second = Integer.parseInt(last);
 						} else {
 							second =
 								Integer.parseInt(
 										last.substring(0, dotIndex));
-							
+
 							String millis = last.substring(dotIndex+1);
 							if(millis.length()==1)
 								millis=millis+"00";
 							else if(millis.length()==2)
 								millis=millis+"0";
-							
+
 							millisecond =
 								Integer.parseInt(millis);
 						}
 					}
-					
+
 					if(day<0) {
 						hour=reverseIfPositive(hour);
 						minute=reverseIfPositive(minute);
@@ -1131,26 +1126,26 @@ class Parser {
 				} else {
 					hour=Integer.parseInt(segments[0]);
 					minute=Integer.parseInt(segments[1]);
-					
+
 					if(segments.length==3) {
 						String last = segments[2];
 						int dotIndex = last.indexOf(".");
-						
+
 						if(dotIndex==-1) {
 							second = Integer.parseInt(last);
 						} else {
 							second = Integer.parseInt(last.substring(0, dotIndex));
-							
+
 							String millis = last.substring(dotIndex+1);
 							if(millis.length()==1)
 								millis=millis+"00";
 							else if(millis.length()==2)
 								millis=millis+"0";
-							
+
 							millisecond = Integer.parseInt(millis);
 						}
 					}
-					
+
 					if(hour<0) {
 						minute=reverseIfPositive(minute);
 						second=reverseIfPositive(second);
@@ -1160,11 +1155,11 @@ class Parser {
 			} catch(final NumberFormatException nfe) {
 				parseException("Time format: " + nfe.getMessage(), line, position);
 			}
-			
+
 			return new TimeSpanWithZone(day, hour, minute, second, millisecond, timeZone);
-		}		
+		}
 	}
-	
+
 	static int reverseIfPositive(int val) {
 		if(val<1)
 			return val;
@@ -1178,31 +1173,31 @@ class Parser {
 
 		private TimeZone timeZone;
 		int days, hours, minutes, seconds, milliseconds;
-		
+
 		private TimeSpanWithZone(int days, int hours, int minutes,
 				int seconds, int milliseconds, String timeZone) {
-			
+
 			this.days=days;
 			this.hours=hours;
 			this.minutes=minutes;
 			this.seconds=seconds;
 			this.milliseconds=milliseconds;
-			
+
 			if(timeZone!=null)
 				this.timeZone=TimeZone.getTimeZone(timeZone);
-		}			
-		
+		}
+
 		int getDays() { return days; }
 		int getHours() { return hours; }
 		int getMinutes() { return minutes; }
 		int getSeconds() { return seconds; }
 		int getMilliseconds() { return milliseconds; }
-		
+
 		TimeZone getTimeZone() {
 			return timeZone;
 		}
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////
 	// Parsers for types
 	////////////////////////////////////////////////////////////////////////////
@@ -1210,25 +1205,25 @@ class Parser {
 		if(literal.charAt(0)!=literal.charAt(literal.length()-1))
 			throw new IllegalArgumentException("Malformed string <" +
 					literal + ">.  Strings must start and end with \" or `");
-		
+
 		return literal.substring(1, literal.length()-1);
 	}
-	
+
 	static Character parseCharacter(String literal) {
 		if(literal.charAt(0)!='\'' ||
 				literal.charAt(literal.length()-1)!='\'')
 			throw new IllegalArgumentException("Malformed character <" +
 					literal + ">.  Character literals must start and end " +
-					"with single quotes.");		
-		
+					"with single quotes.");
+
 		return new Character(literal.charAt(1));
 	}
-	
+
 	static Number parseNumber(String literal) {
 		int textLength = literal.length();
 		boolean hasDot=false;
 		int tailStart=0;
-		
+
 		for(int i=0;i<textLength;i++) {
 			char c=literal.charAt(i);
 			if("-0123456789".indexOf(c)==-1) {
@@ -1248,10 +1243,10 @@ class Parser {
 				tailStart=i+1;
 			}
 		}
-		
+
 		final String number = literal.substring(0, tailStart);
 		final String tail = literal.substring(tailStart);
-		
+
 
 		if(tail.length() == 0) {
 			if(hasDot) {
@@ -1260,7 +1255,7 @@ class Parser {
 				return new Integer(number);
 			}
 		}
-		
+
 		if(tail.equalsIgnoreCase("BD")) {
 			return new BigDecimal(number);
 		} else if(tail.equalsIgnoreCase("L")) {
@@ -1273,10 +1268,10 @@ class Parser {
 		} else if(tail.equalsIgnoreCase("D")) {
 			return new Double(number);
 		}
-		
+
 		throw new NumberFormatException("Could not parse number <" + literal + ">");
-	}	
-	
+	}
+
 	static Calendar parseDateTime(String literal) {
 		int spaceIndex = literal.indexOf(' ');
 		if(spaceIndex==-1) {
@@ -1284,20 +1279,20 @@ class Parser {
 		} else {
 			Calendar dc = parseDate(literal.substring(0,spaceIndex));
 			String timeString = literal.substring(spaceIndex+1);
-			
+
 			int dashIndex = timeString.indexOf('-');
 			String tzString = null;
 			if(dashIndex!=-1) {
 				tzString=timeString.substring(dashIndex+1);
 				timeString=timeString.substring(0, dashIndex);
 			}
-			
+
 			String[] timeComps = timeString.split(":");
 			if(timeComps.length<2 || timeComps.length>3)
 				throw new IllegalArgumentException("Malformed time " +
 						"component in date/time literal.  Must use " +
 						"hh:mm(:ss)(.xxx)");
-			
+
 			int hour = 0;
 			int minute = 0;
 			int second = 0;
@@ -1307,16 +1302,16 @@ class Parser {
 			try {
 				hour=Integer.parseInt(timeComps[0]);
 				minute=Integer.parseInt(timeComps[1]);
-				
+
 				if(timeComps.length==3) {
 					String last = timeComps[2];
-					
+
 					int dotIndex = last.indexOf('.');
 					if(dotIndex==-1) {
 						second=Integer.parseInt(last);
 					} else {
 						second=Integer.parseInt(last.substring(0,dotIndex));
-						
+
 						String millis = last.substring(dotIndex+1);
 						if(millis.length()==1)
 							millis=millis+"00";
@@ -1330,25 +1325,25 @@ class Parser {
 						"in time portion of date/time literal \"" +
 							nfe.getMessage() +"\"");
 			}
-			
+
 			TimeZone tz = (tzString==null) ? TimeZone.getDefault() :
 				TimeZone.getTimeZone(tzString);
-			
+
 			GregorianCalendar gc = new GregorianCalendar(tz);
 			gc.set(dc.get(Calendar.YEAR), dc.get(Calendar.MONTH),
 					dc.get(Calendar.DAY_OF_MONTH), hour, minute, second);
 			gc.set(Calendar.MILLISECOND, millisecond);
 			gc.getTime();
-			
+
 			return gc;
 		}
 	}
-	
+
 	static Calendar parseDate(String literal) {
 		String[] comps = literal.split("/");
 		if(comps.length!=3)
 			throw new IllegalArgumentException("Malformed Date <" + literal + ">");
-		
+
 		try {
 			return new GregorianCalendar(
 					Integer.parseInt(comps[0]),
@@ -1357,45 +1352,39 @@ class Parser {
 			);
 		} catch(final NumberFormatException e) {
 			throw new IllegalArgumentException(String.format("Number format exception: \"%s\" for date literal <%s>", e.getMessage(), literal));
-			
+
 		}
 	}
-	
+
 	static byte[] parseBinary(String literal) {
 		final String stripped = literal.substring(1, literal.length()-1);
 		final StringBuilder sb = new StringBuilder();
 		final int btLength = stripped.length();
 		for(int i=0; i<btLength; i++) {
 			char c = stripped.charAt(i);
-			if("\n\r\t ".indexOf(c)==-1)
-				sb.append(c);
+			if("\n\r\t ".indexOf(c)==-1) {
+                sb.append(c);
+            }
 		}
-				
-		byte[] bytes = null;
-		try {
-			bytes= com.singingbush.codec.Base64.decode(sb.toString());
-		} catch(Base64.EncodingException e) {
-			throw new IllegalArgumentException(e.getMessage());
-		}
-		
-		return bytes;
+
+		return Base64.getDecoder().decode(sb.toString());
 	}
-	
+
 	static SDLTimeSpan parseTimeSpan(String literal) {
-		int days=0; // optional 
+		int days=0; // optional
 		int hours=0; // mandatory
 		int minutes=0; // mandatory
 		int seconds=0; // mandatory
 		int milliseconds=0; // optional
-				
+
 		String[] segments = literal.split(":");
-		
+
 		if(segments.length<3 || segments.length>4)
 			throw new IllegalArgumentException("Malformed time span <" +
 					literal + ">.  Time spans must use the format " +
 					"(d:)hh:mm:ss(.xxx) Note: if the day component is " +
 					"included it must be suffixed with lower case \"d\"");
-		
+
 		try {
 			if(segments.length==4) {
 				String dayString = segments[0];
@@ -1404,32 +1393,32 @@ class Parser {
 				}
 
 				days = Integer.parseInt(dayString.substring(0, dayString.length()-1));
-				
+
 				hours = Integer.parseInt(segments[1]);
 				minutes = Integer.parseInt(segments[2]);
-				
+
 				if(segments.length==4) {
 					String last = segments[3];
 					int dotIndex = last.indexOf(".");
-					
+
 					if(dotIndex==-1) {
 						seconds = Integer.parseInt(last);
 					} else {
 						seconds =
 							Integer.parseInt(
 									last.substring(0, dotIndex));
-						
+
 						String millis = last.substring(dotIndex+1);
 						if(millis.length()==1)
 							millis=millis+"00";
 						else if(millis.length()==2)
 							millis=millis+"0";
-						
+
 						milliseconds =
 							Integer.parseInt(millis);
 					}
 				}
-				
+
 				if(days<0) {
 					hours=reverseIfPositive(hours);
 					minutes=reverseIfPositive(minutes);
@@ -1439,15 +1428,15 @@ class Parser {
 			} else {
 				hours=Integer.parseInt(segments[0]);
 				minutes=Integer.parseInt(segments[1]);
-				
+
 				String last = segments[2];
 				int dotIndex = last.indexOf(".");
-				
+
 				if(dotIndex==-1) {
 					seconds = Integer.parseInt(last);
 				} else {
 					seconds = Integer.parseInt(last.substring(0, dotIndex));
-					
+
 					String millis = last.substring(dotIndex+1);
 					if(millis.length()==1)
 						millis=millis+"00";
@@ -1465,7 +1454,7 @@ class Parser {
 		} catch(final NumberFormatException e) {
 			throw new IllegalArgumentException(String.format("Number format in time span exception: \"%s\" for literal <%s>", e.getMessage(), literal));
 		}
-		
+
 		return new SDLTimeSpan(days, hours, minutes, seconds, milliseconds);
-	}	
+	}
 }
