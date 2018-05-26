@@ -339,8 +339,8 @@ public class Tag implements Serializable {
 
 	private static final long serialVersionUID = 8283229161742794620L;
 
-	private String namespace = "";
-	private String name;
+	private final String namespace;
+	private final String name;
 
 	private List<SdlValue> values = new ArrayList();
 	private List<SdlValue> valuesView = Collections.unmodifiableList(values);
@@ -837,41 +837,12 @@ public class Tag implements Serializable {
 	}
 
 	/**
-	 * Sets the name of this Tag.
-	 *
-	 * @param name The name to set.
-	 * @throws IllegalArgumentException if the name is not a legal SDL
-	 *     identifier (see {@link SDL#validateIdentifier(String)})
-	 */
-	public void setName(String name) {
-		SDL.validateIdentifier(name);
-		this.name = name;
-	}
-
-	/**
 	 * Returns the namespace.  Namespace is never null but may be empty.
 	 *
 	 * @return This Tag's namespace
 	 */
 	public String getNamespace() {
 		return namespace;
-	}
-
-	/**
-	 * The namespace to set.  null will be coerced to the empty string.
-	 *
-	 * @param namespace The namespace to set
-	 * @throws IllegalArgumentException if the namespace is non-blank and is not
-	 *     a legal SDL identifier (see {@link SDL#validateIdentifier(String)})
-	 */
-	public void setNamespace(String namespace) {
-		if(namespace==null)
-			namespace="";
-
-		if(namespace.length()!=0)
-			SDL.validateIdentifier(namespace);
-
-		this.namespace = namespace;
 	}
 
 	/**
@@ -1075,70 +1046,4 @@ public class Tag implements Serializable {
         return Objects.hash(namespace, name, values, valuesView, attributeToNamespace, attributes, children, childrenView);
     }
 
-    /**
-	 * Returns a string containing an XML representation of this tag.  Values
-	 * will be represented using _val0, _val1, etc.
-	 *
-	 * @return An XML String describing this Tag
-	 */
-	public String toXMLString() {
-		return toXMLString("");
-	}
-
-	/**
-	 * @param linePrefix A prefix to insert before every line.
-	 * @return A String containing an XML representation of this tag.  Values
-	 *         will be represented using _val0, _val1, etc.
-	 */
-	String toXMLString(String linePrefix) {
-		String newLine = System.getProperty("line.separator");
-
-		if(linePrefix==null)
-			linePrefix="";
-
-		StringBuilder builder = new StringBuilder(linePrefix + "<");
-		if(!namespace.equals(""))
-			builder.append(namespace + ":");
-		builder.append(name);
-
-		// output values
-		if(!values.isEmpty()) {
-			int i=0;
-			for(final SdlValue val : values) {
-				builder.append(" ");
-				builder.append("_val" + i + "=" + val.getText());
-				i++;
-			}
-		}
-
-		// output attributes
-		if(!attributes.isEmpty()) {
-			for(String key:attributes.keySet()) {
-				builder.append(" ");
-				String attNamespace = attributeToNamespace.get(key);
-				if(!attNamespace.equals("")) {
-                    builder.append(attNamespace).append(":");
-                }
-				builder.append(key)
-                    .append("=")
-                    .append(attributes.get(key).getText());
-			}
-		}
-
-		if(!children.isEmpty()) {
-			builder.append(">").append(newLine);
-			for(final Tag t : children) {
-				builder.append(t.toXMLString(linePrefix + "    ") + newLine);
-			}
-
-			builder.append(linePrefix + "</");
-			if(!namespace.equals(""))
-				builder.append(namespace + ":");
-			builder.append(name + ">");
-		} else {
-			builder.append("/>");
-		}
-
-		return builder.toString();
-	}
 }

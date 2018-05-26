@@ -2,6 +2,8 @@ package com.singingbush.sdl;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  * An SDL token.
  *
@@ -44,7 +46,7 @@ class Token {
                 sdlValue = new SdlValue<>(text.charAt(1), SdlType.CHARACTER);
             } else if(text.equals("null")) {
                 type = SdlType.NULL;
-                sdlValue = new SdlValue<>(null, SdlType.NULL); // todo: maybe change to 'sdlValue = null;'
+                sdlValue = new SdlValue<>(null, SdlType.NULL);
             } else if(text.equals("true") || text.equals("on")) {
                 type = SdlType.BOOLEAN;
                 sdlValue = new SdlValue<>(true, SdlType.BOOLEAN);
@@ -154,6 +156,26 @@ class Token {
     @Nullable
     public Object getJavaObject() {
         return sdlValue != null ? sdlValue.getValue() : null;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Token token = (Token) obj;
+        return line == token.line &&
+            position == token.position &&
+            size == token.size &&
+            punctuation == token.punctuation &&
+            literal == token.literal &&
+            type == token.type &&
+            Objects.equals(text, token.text) &&
+            Objects.equals(sdlValue, token.sdlValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, text, line, position, size, sdlValue, punctuation, literal);
     }
 
     @Override
