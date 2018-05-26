@@ -22,17 +22,15 @@ final List<Tag> tags = new Parser(inputStreamReader).parse();
 
 This code was originally dumped in github in May 2011 with a single commit message stating that it was migrated from svn.
 
-Since then there's been no activity and it seems that issues are ignored. Even the URL for documentation is broken.
+Since then there's been no activity in that repository and it seems that issues are ignored. Even the URL for documentation is broken.
 
-The project seemed to be abandoned so I've forked it with the initial goal of
+As the project appears to be abandoned I've forked it with the goal of
 
 - [x] Adding more unit tests
 - [x] Enabling continuous integration using [travis-ci.org](travis-ci.org)
 - [x] Reporting on Test Coverage using [coveralls.io](coveralls.io)
 - [x] Fixing existing bugs
+- [x] Overhaul the project and start rewriting the codebase
 - [ ] Publish build artifacts to maven central
-- [x] re-write
 
 Daniel Leuck, the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
-
-[![Sponsor](https://app.codesponsor.io/embed/1kT3Y5i6uwpQfj6LFvEdFfGi/SingingBush/SDL.svg)](https://app.codesponsor.io/link/1kT3Y5i6uwpQfj6LFvEdFfGi/SingingBush/SDL)
