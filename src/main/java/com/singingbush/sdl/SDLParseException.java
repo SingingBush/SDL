@@ -2,8 +2,8 @@
  * Simple Declarative Language (SDL) for Java
  * Copyright 2005 Ikayzo, inc.
  *
- * This program is free software. You can distribute or modify it under the 
- * terms of the GNU Lesser General Public License version 2.1 as published by  
+ * This program is free software. You can distribute or modify it under the
+ * terms of the GNU Lesser General Public License version 2.1 as published by
  * the Free Software Foundation.
  *
  * This program is distributed AS IS and WITHOUT WARRANTY. OF ANY KIND,
@@ -18,19 +18,19 @@ package com.singingbush.sdl;
 
 /**
  * An exception describing a problem with an SDL document's structure
- * 
+ *
  * @author Daniel Leuck
  */
 @SuppressWarnings("serial")
 public class SDLParseException extends Exception {
 
-	private int line;
-	private int position;
-	
+	private final int line;
+	private final int position;
+
 	/**
 	 * Note: Line and positioning numbering start with 1 rather than 0 to be
 	 * consistent with most editors.
-	 * 
+	 *
 	 * @param description A description of the problem.
 	 * @param line The line on which the error occured or -1 for unknown
 	 * @param position The position (within the line) where the error occured or
@@ -44,8 +44,8 @@ public class SDLParseException extends Exception {
 
 		this.line = line;
 		this.position = position;
-	}	
-	
+	}
+
 	/**
 	 * @return Returns the line on which the error occured
 	 */
@@ -60,11 +60,5 @@ public class SDLParseException extends Exception {
 	public int getPosition() {
 		return position;
 	}
-	
-	/**
-	 * @return getMessage()
-	 */
-	public String toString() {
-		return getMessage();
-	}
+
 }

@@ -16,6 +16,9 @@
  */
 package com.singingbush.sdl;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,6 +32,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * <p>SDL (Simple Declarative Language) documents are made up of Tags.  Tags
@@ -338,12 +342,12 @@ public class Tag implements Serializable {
 	private String namespace = "";
 	private String name;
 
-	private List values = new ArrayList();
-	private List valuesView = Collections.unmodifiableList(values);
+	private List<SdlValue> values = new ArrayList();
+	private List<SdlValue> valuesView = Collections.unmodifiableList(values);
 	private Map<String,String> attributeToNamespace = new HashMap<>();
-	private Map<String,String> attributeToNamespaceView = Collections.unmodifiableMap(attributeToNamespace);
-	private SortedMap<String,Object> attributes = new TreeMap<>();
-	private SortedMap<String,Object> attributesView = Collections.unmodifiableSortedMap(attributes);
+	//private Map<String,String> attributeToNamespaceView = Collections.unmodifiableMap(attributeToNamespace);
+	private SortedMap<String,SdlValue> attributes = new TreeMap<>();
+	//private SortedMap<String,SdlValue> attributesView = Collections.unmodifiableSortedMap(attributes);
 	private List<Tag> children = new ArrayList<>();
 	private List<Tag> childrenView = Collections.unmodifiableList(children);
 
@@ -368,15 +372,17 @@ public class Tag implements Serializable {
 	 *     identifier (see {@link SDL#validateIdentifier(String)}) or the
 	 *     namespace is non-blank and is not a legal SDL identifier.
 	 */
-	public Tag(String namespace, String name) {
-		if(namespace==null)
-			namespace="";
-		if(namespace.length()!=0)
-			SDL.validateIdentifier(namespace);
-		this.namespace=namespace;
+	public Tag(@NotNull final String namespace, @NotNull final String name) {
+		if(namespace != null && !namespace.isEmpty()) {
+            SDL.validateIdentifier(namespace);
+            this.namespace=namespace;
+        } else {
+            this.namespace = "";
+        }
 
-		if(name==null || name.trim().length()==0)
-			throw new IllegalArgumentException("Tag name cannot be null or empty.");
+		if(name == null || name.trim().length()==0) {
+            throw new IllegalArgumentException("Tag name cannot be null or empty.");
+        }
 		SDL.validateIdentifier(name);
 		this.name=name;
 	}
@@ -402,28 +408,61 @@ public class Tag implements Serializable {
 
 	/**
 	 * A convenience method that sets the first value in the value list.  See
-	 * {@link #addValue(Object)} for legal types.
+	 * {@link #addValue(SdlValue)} for legal types.
 	 *
 	 * @param value The value to be set.
 	 * @throws IllegalArgumentException if the value is not a legal SDL type
 	 */
-	public void setValue(Object value) {
-		if(values.isEmpty())
-			addValue(value);
-		else values.set(0, SDL.coerceOrFail(value));
+	public void setValue(SdlValue value) {
+		if(values.isEmpty()) {
+            addValue(value);
+        } else {
+            values.set(0, value); // SDL.coerceOrFail(value));
+        }
 	}
 
 	/**
-	 * A convenience method that returns the first value.
+	 * A convenience method that returns the first value wrapped in a SdlValue
 	 *
-	 * @return The first value
+	 * @return The first value or null
+     * @since 2.0.0
 	 */
-	public Object getValue() {
-		if(values.isEmpty())
-			return null;
-		else
-			return values.get(0);
+	@Nullable
+	public SdlValue getSdlValue() {
+        return values.isEmpty() ? null : values.get(0);
 	}
+
+    /**
+     * A convenience method that returns the first value.
+     * @return The first value or null
+     */
+    @Nullable
+    public Object getValue() {
+        return values.isEmpty() ? null : getValue(0);
+    }
+
+    /**
+     *
+     * @param clazz
+     * @param <T> type that should be returned
+     * @return The value or null
+     * @since 2.0.0
+     */
+    @Nullable
+    public <T> T getValue(final Class<T> clazz) {
+        return values.isEmpty() ? null : clazz.cast(getValue(0));
+    }
+
+    /**
+     * A convenience method that returns the value for the given index.
+     * @param index position in the collection of values
+     * @return The value or null
+     * @since 2.0.0
+     */
+    @Nullable
+    public Object getValue(final int index) {
+        return values.isEmpty() || values.size() <= index ? null : values.get(index).getValue();
+    }
 
 	////////////////////////////////////////////////////////////////////////////
 	// Convenience methods for getValue
@@ -463,6 +502,7 @@ public class Tag implements Serializable {
 	 * @return The first child tag having the given name or null if no such
 	 *         child exists
 	 */
+	@Nullable
 	public Tag getChild(String childName) {
 		return getChild(childName, false);
 	}
@@ -473,9 +513,11 @@ public class Tag implements Serializable {
 	 *
 	 * @param childName The name of the child Tag
 	 * @param recursive will search recursively if set to true
-	 * @return The first child tag having the given name or null if no such
-	 *         child exists
+	 * @return The first child tag having the given name or null if no such child exists
+     * @deprecated As of release 2.0.0 as a recursive search could potentially have more than one tag
 	 */
+	@Deprecated
+	@Nullable
 	public Tag getChild(String childName, boolean recursive) {
 		for(final Tag t : children) {
 			if(t.getName().equals(childName))
@@ -542,11 +584,10 @@ public class Tag implements Serializable {
 	 * @param recursive If true search all descendents
 	 * @return All the child tags in the given namespace
 	 */
-	public List<Tag> getChildrenForNamespace(String namespace,
-			boolean recursive) {
+	public List<Tag> getChildrenForNamespace(String namespace, boolean recursive) {
+		final List<Tag> kids = new ArrayList<>();
 
-		List<Tag> kids = new ArrayList<Tag>();
-		for(Tag t:children) {
+		for(final Tag t : children) {
 			if(t.getNamespace().equals(namespace))
 				kids.add(t);
 
@@ -565,13 +606,13 @@ public class Tag implements Serializable {
 	 * @param name The name of the children from which values are retrieved
 	 * @return A list of values (or lists of values)
 	 */
-	public List getChildrenValues(String name) {
-		ArrayList results = new ArrayList();
+	public List getChildrenValues(final String name) {
+        final ArrayList results = new ArrayList();
 
-		List<Tag> children = getChildren(name);
+        final List<Tag> children = getChildren(name);
 
-		for(Tag c:children) {
-			List values = c.getValues();
+		for(final Tag c : children) {
+            final List values = c.getValues();
 			if(values.isEmpty())
 				results.add(null);
 			else if(values.size()==1)
@@ -592,8 +633,8 @@ public class Tag implements Serializable {
 	 * @param value The value to add
 	 * @throws IllegalArgumentException if the value is not a legal SDL type
 	 */
-	public void addValue(Object value) {
-		values.add(SDL.coerceOrFail(value));
+	public void addValue(SdlValue value) {
+		values.add(value); // SDL.coerceOrFail(value)
 	}
 
 	/**
@@ -612,29 +653,29 @@ public class Tag implements Serializable {
 	 * @return An immutable view of the values.
 	 */
 	public List<Object> getValues() {
-		return valuesView;
+		return valuesView.stream().map(SdlValue::getValue).collect(Collectors.toList());
 	}
 
-	/**
-	 * Set the values for this tag.  See {@link #addValue(Object)} for legal
+	/*
+	 * Set the values for this tag.  See {@link #addValue(SdlValue)} for legal
 	 * value types.
 	 *
 	 * @param values The new values
 	 * @throws IllegalArgumentException if the collection contains any values
 	 *     which are not legal SDL types
 	 */
-	public void setValues(Collection values) {
-		this.values.clear();
-		if(values!=null) {
-			// this is required to ensure validation of types
-			for(Object o:values)
-				addValue(o);
-		}
-	}
+//	public void setValues(Collection values) {
+//		this.values.clear();
+//		if(values!=null) {
+//			// this is required to ensure validation of types
+//			for(final Object obj : values)
+//				addValue(obj);
+//		}
+//	}
 
 	/**
 	 * Set an attribute for this tag.  The allowable attribute value types are
-	 * the same as those allowed for {@link #addValue(Object)}
+	 * the same as those allowed for {@link #addValue(SdlValue)}
 	 *
 	 * @param key The attribute key
 	 * @param value The attribute value
@@ -642,14 +683,14 @@ public class Tag implements Serializable {
 	 *     identifier (see {@link SDL#validateIdentifier(String)}) or the
 	 *     value is not a legal SDL type.
 	 */
-	public void setAttribute(String key, Object value) {
+	public void setAttribute(String key, SdlValue value) {
 		setAttribute("", key, value);
 	}
 
 	/**
 	 * Set an attribute in the given namespace for this tag.  The allowable
 	 * attribute value types are the same as those allowed for
-	 * {@link #addValue(Object)}
+	 * {@link #addValue(SdlValue)}
 	 *
 	 * @param namespace The namespace for this attribute
 	 * @param key The attribute key
@@ -659,7 +700,7 @@ public class Tag implements Serializable {
 	 *     namespace is non-blank and is not a legal SDL identifier, or the
 	 *     value is not a legal SDL type
 	 */
-	public void setAttribute(String namespace, String key, Object value) {
+	public void setAttribute(@Nullable String namespace, String key, SdlValue value) {
 		if(namespace==null)
 			namespace="";
 
@@ -668,7 +709,7 @@ public class Tag implements Serializable {
 		SDL.validateIdentifier(key);
 
 		attributeToNamespace.put(key, namespace);
-		attributes.put(key, SDL.coerceOrFail(value));
+		attributes.put(key, value); //SDL.coerceOrFail(value));
 	}
 
 	/**
@@ -677,8 +718,10 @@ public class Tag implements Serializable {
 	 * @param key attribute name
 	 * @return The value for the key if such a key exists
 	 */
-	public Object getAttribute(String key) {
-		return attributes.get(key);
+	@Nullable
+	public Object getAttribute(final String key) {
+        final SdlValue value = attributes.get(key);
+        return value != null ? value.getValue() : null;
 	}
 
 	/**
@@ -696,26 +739,26 @@ public class Tag implements Serializable {
 	 *
 	 * @return An immutable view of the attributes.
 	 */
-	public SortedMap<String, Object> getAttributes() {
-		return attributesView;
+	public SortedMap<String, SdlValue> getAttributes() {
+		return Collections.unmodifiableSortedMap(attributes);
 	}
 
 	/**
 	 * Set all the attributes for this Tag in one operation.  See
-	 * {@link #addValue(Object)} for allowable attribute value types.
+	 * {@link #addValue(SdlValue)} for allowable attribute value types.
 	 *
 	 * @param attributes The new attributes
 	 * @throws IllegalArgumentException if any key in the map is not a legal SDL
 	 *     identifier (see {@link SDL#validateIdentifier(String)}), or any value
 	 *     is not a legal SDL type
 	 */
-	public void setAttributes(Map<String,Object> attributes) {
+	public void setAttributes(Map<String,SdlValue> attributes) {
 		this.attributes.clear();
 
 		if(attributes!=null) {
 
 			// this is required to ensure validation
-			for(Entry<String,Object> e:attributes.entrySet())
+			for(Entry<String,SdlValue> e : attributes.entrySet())
 				setAttribute(e.getKey(), e.getValue());
 		}
 	}
@@ -879,10 +922,11 @@ public class Tag implements Serializable {
 	 * @throws SDLParseException If the SDL input is malformed
 	 * @return This tag after adding all the children read from the reader
 	 */
-	public Tag read(Reader reader) throws IOException, SDLParseException {
+	public Tag read(@NotNull final Reader reader) throws IOException, SDLParseException {
 		final List<Tag> tags = new Parser(reader).parse();
-		for(final Tag t:tags)
-			addChild(t);
+		for(final Tag t : tags) {
+            addChild(t);
+        }
 		return this;
 	}
 
@@ -940,6 +984,7 @@ public class Tag implements Serializable {
 	 *
 	 * @return A string representation of this tag using SDL
 	 */
+	@Override
 	public String toString() {
 		return toString("");
 	}
@@ -950,55 +995,56 @@ public class Tag implements Serializable {
 	 *
 	 * TODO: break up long lines using the backslash
 	 */
-	private String toString(String linePrefix) {
+	private String toString(@Nullable String linePrefix) {
 		String newLine = System.getProperty("line.separator");
 
 		if(linePrefix==null)
 			linePrefix="";
 
-		StringBuilder builder = new StringBuilder(linePrefix);
+		final StringBuilder builder = new StringBuilder(linePrefix);
 
 		boolean skipValueSpace=false;
-		if(name.equals("content") && namespace.equals("")) {
+		if("content".equals(name) && "".equals(namespace)) {
 			skipValueSpace=true;
 		} else {
-			if(!namespace.equals(""))
-				builder.append(namespace + ":");
+			if(namespace != null && !"".equals(namespace)) {
+                builder.append(namespace).append(":");
+            }
 			builder.append(name);
 		}
 		// output values
-		if(!values.isEmpty()) {
-			for(Iterator i=values.iterator(); i.hasNext();) {
-				if(skipValueSpace)
-					skipValueSpace=false;
-				else
-					builder.append(" ");
-				builder.append(SDL.format(i.next()));
+		if(values != null && !values.isEmpty()) {
+            for(final SdlValue value : values) {
+				if(skipValueSpace) {
+                    skipValueSpace=false;
+                } else {
+                    builder.append(" ");
+                }
+                builder.append(value.getText()); //builder.append(SDL.format(value));
 			}
 		}
 
 		// output attributes
-		if(!attributes.isEmpty()) {
-			for(Iterator<Entry<String,Object>> i=
-				attributes.entrySet().iterator();i.hasNext();) {
-
+		if(attributes != null && !attributes.isEmpty()) {
+			for(Iterator<Entry<String,SdlValue>> i = attributes.entrySet().iterator(); i.hasNext();) {
 				builder.append(" ");
 
-				Entry<String,Object> e = i.next();
-				String key=e.getKey();
-				String attNamespace = attributeToNamespace.get(key);
+                final Entry<String,SdlValue> e = i.next();
+				final String key=e.getKey();
+                final String attNamespace = attributeToNamespace.get(key);
 
-				if(!attNamespace.equals(""))
-					builder.append(attNamespace + ":");
-				builder.append(key + "=");
-				builder.append(SDL.format(attributes.get(key)));
+				if(attNamespace != null && !attNamespace.isEmpty()) {
+                    builder.append(attNamespace).append(":");
+                }
+				builder.append(key).append("=");
+				builder.append(attributes.get(key).getText());
 			}
 		}
 
 		// output children
-		if(!children.isEmpty()) {
+		if(children != null && !children.isEmpty()) {
 			builder.append(" {" + newLine);
-			for(Tag t:children) {
+			for(final Tag t : children) {
 				builder.append(t.toString(linePrefix + "    ") + newLine);
 			}
 			builder.append(linePrefix + "}");
@@ -1007,25 +1053,29 @@ public class Tag implements Serializable {
 		return builder.toString();
 	}
 
-	/**
-	 * Returns true if this tag (including all of its values, attributes, and
-	 * children) is equivalent to the given tag.
-	 *
-	 * @return true if the tags are equivalet
-	 */
-	public boolean equals(Object o) {
-		// this is safe because toString() dumps the full state
-		return o instanceof Tag && o.toString().equals(toString());
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final Tag tag = (Tag) o;
+        return Objects.equals(namespace, tag.namespace) &&
+            Objects.equals(name, tag.name) &&
+            Objects.equals(values, tag.values) &&
+            Objects.equals(valuesView, tag.valuesView) &&
+            Objects.equals(attributeToNamespace, tag.attributeToNamespace) &&
+            //Objects.equals(attributeToNamespaceView, tag.attributeToNamespaceView) &&
+            Objects.equals(attributes, tag.attributes) &&
+            //Objects.equals(attributesView, tag.attributesView) &&
+            Objects.equals(children, tag.children) &&
+            Objects.equals(childrenView, tag.childrenView);
+    }
 
-	/**
-	 * @return The hash (based on the output from toString())
-	 */
-	public int hashCode() {
-		return toString().hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(namespace, name, values, valuesView, attributeToNamespace, attributes, children, childrenView);
+    }
 
-	/**
+    /**
 	 * Returns a string containing an XML representation of this tag.  Values
 	 * will be represented using _val0, _val1, etc.
 	 *
@@ -1054,10 +1104,9 @@ public class Tag implements Serializable {
 		// output values
 		if(!values.isEmpty()) {
 			int i=0;
-			for(Object val:values) {
+			for(final SdlValue val : values) {
 				builder.append(" ");
-				builder.append("_val" + i + "=\"" + SDL.format(val, false)
-						+ "\"");
+				builder.append("_val" + i + "=" + val.getText());
 				i++;
 			}
 		}
@@ -1067,17 +1116,18 @@ public class Tag implements Serializable {
 			for(String key:attributes.keySet()) {
 				builder.append(" ");
 				String attNamespace = attributeToNamespace.get(key);
-				if(!attNamespace.equals(""))
-					builder.append(attNamespace + ":");
-				builder.append(key + "=");
-				builder.append("\"" + SDL.format(attributes.get(key), false)
-						+ "\"");
+				if(!attNamespace.equals("")) {
+                    builder.append(attNamespace).append(":");
+                }
+				builder.append(key)
+                    .append("=")
+                    .append(attributes.get(key).getText());
 			}
 		}
 
 		if(!children.isEmpty()) {
-			builder.append(">" + newLine);
-			for(Tag t:children) {
+			builder.append(">").append(newLine);
+			for(final Tag t : children) {
 				builder.append(t.toXMLString(linePrefix + "    ") + newLine);
 			}
 

@@ -7,7 +7,7 @@ jobs:
     - stage: Build using various JDK versions
       jdk: oraclejdk8
     - jdk: oraclejdk9
-    - jdk: openjdk7
+    - jdk: openjdk8
     - stage: Test Coverage
       jdk: oraclejdk8
       after_success: mvn clean test jacoco:report coveralls:report

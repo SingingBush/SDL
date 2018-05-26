@@ -16,11 +16,16 @@
  */
 package com.singingbush.sdl;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.Base64;
@@ -33,27 +38,18 @@ import java.util.Base64;
 public class SDL {
 
 	/**
-	 * <p>The SDL standard time format HH:mm:ss.SSS-z</p>
-	 *
-	 * <p>Note: SDL uses a 24 hour clock (0-23)</p>
-	 * <p>Note: This is not the same as a time span.   This format is used
-	 *          for the time component of a date_time instance</p>
-	 */
-	public static final String TIME_FORMAT = "HH:mm:ss.SSS-z";
-
-	/**
-	 * <p>The SDL standard date format yyyy/MM/dd</p>
+	 * <p>The SDL standard date format "yyyy/MM/dd" or "y/M/d"</p>
 	 *
 	 * <p>Note: SDL uses the Gregorian calendar</p>
 	 */
-	public static final String DATE_FORMAT = "yyyy/MM/dd";
+	public static final String DATE_FORMAT = "y/M/d";// "yyyy/MM/dd";
 
 	/**
-	 * The SDL standard DATE_TIME format yyyy/MM/dd HH:mm:ss.SSS-z
+	 * The SDL standard DATE_TIME format "yyyy/MM/dd HH:mm:ss.SSS-z" or "y/M/d H:m:s.SSS-z"
 	 *
 	 * <p>Note: SDL uses a 24 hour clock (0-23) and the Gregorian calendar
 	 */
-	public static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
+	public static final String DATE_TIME_FORMAT = DATE_FORMAT + " H:m:s.SSS-z";// "HH:mm:ss.SSS-z";
 
 	/**
 	 * Create an SDL string representation for an object (note: Strings and
@@ -62,7 +58,7 @@ public class SDL {
 	 * @param object The object to format
 	 * @return an SDL string representation for an object
 	 */
-	public static String format(Object object) {
+	public static String format(@Nullable final Object object) {
 		return format(object, true);
 	}
 
@@ -70,22 +66,26 @@ public class SDL {
 	 * Create an SDL string representation for an object
 	 *
 	 * @param object The object to format
-	 * @param addQuotes Quotes will be added to Strings and Characters if true
+	 * @param escapeText if the object is a String it can be escaped within "" or literal in ``
 	 * @return an SDL string representation for an object
 	 */
-	public static String format(Object object, boolean addQuotes) {
-
-		if(object instanceof String) {
-			if(addQuotes)
-				return "\"" + escape(String.valueOf(object)) + "\"";
-			else
-				return escape(String.valueOf(object));
+	public static String format(@Nullable final Object object, boolean escapeText) {
+	    if(object == null) {
+            return "null";
+        } else if(object instanceof String) {
+			if(escapeText) {
+                return "\"" + escape(String.valueOf(object)) + "\"";
+            } else {
+			    // todo: figure out a good way to end up here
+                return "`" + String.valueOf(object) + "`";
+            }
 		} else if(object instanceof Character) {
-			if(addQuotes) {
-				return "'" + escape((Character)object) + "'";
-			} else {
-				return escape((Character)object);
-			}
+            return "'" + escape((Character)object) + "'";
+//			if(addQuotes) {
+//				return "'" + escape((Character)object) + "'";
+//			} else {
+//				return escape((Character)object);
+//			}
 		} else if(object instanceof BigDecimal) {
 			return object.toString() + "BD";
 		} else if(object instanceof Float) {
@@ -94,6 +94,20 @@ public class SDL {
 			return object.toString() + "L";
 		} else if(object instanceof byte[]) {
 			return "[" + Base64.getEncoder().encodeToString((byte[])object) + "]";
+        } else if(LocalDate.class.isAssignableFrom(object.getClass())) {
+            return DateTimeFormatter
+                .ofPattern(DATE_FORMAT)
+                .format(LocalDate.class.cast(object));
+        } else if(LocalDateTime.class.isAssignableFrom(object.getClass())) {
+            return DateTimeFormatter
+                .ofPattern(DATE_TIME_FORMAT)
+                .format(LocalDateTime.class.cast(object));
+        } else if(ZonedDateTime.class.isAssignableFrom(object.getClass())) {
+            return DateTimeFormatter
+                .ofPattern(DATE_TIME_FORMAT) // .ofPattern("y/M/d H:m:s.SSS-z")
+                .format(ZonedDateTime.class.cast(object));
+        } else if(Duration.class.isAssignableFrom(object.getClass())) {
+		    return timeSpanString(Duration.class.cast(object));
 		} else if(object instanceof Calendar) {
 			Calendar c = (Calendar)object;
 
@@ -120,10 +134,59 @@ public class SDL {
 			}
 		}
 
-		// We don't need to worry about time span because SDLTimeSpan outputs
-		// proper SDL from its toString() method
 		return String.valueOf(object);
 	}
+
+	private static String timeSpanString(@NotNull final Duration duration) {
+        final StringBuilder sb = new StringBuilder();
+
+        long days = duration.toDays();
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes();
+        long seconds = duration.toMillis() / 1000;
+        long milliseconds = duration.toMillis();
+
+        if(days!=0) {
+            sb.append(days);
+            sb.append("d");
+            sb.append(":");
+
+            sb.append(padTo2((int)Math.abs(hours)));
+        } else {
+            sb.append(padTo2(hours));
+        }
+
+        sb.append(":");
+
+        sb.append(padTo2(Math.abs(minutes)));
+        sb.append(":");
+
+        sb.append(padTo2(Math.abs(seconds)));
+
+        if(milliseconds!=0) {
+            sb.append(".");
+
+            String millis = "" + Math.abs(milliseconds);
+            if(millis.length()==1)
+                millis="00"+millis;
+            else if(millis.length()==2)
+                millis="0"+millis;
+
+            sb.append(millis);
+        }
+
+        return sb.toString();
+    }
+
+    private static String padTo2(long val) {
+        if(val>-10 && val<0) {
+            return "-0" + Math.abs(val);
+        } else if(val>-1 && val<10) {
+            return "0" + val;
+        }
+
+        return "" + val;
+    }
 
 	private static String escape(String s) {
 		StringBuilder sb = new StringBuilder();
@@ -161,7 +224,7 @@ public class SDL {
 		}
 	}
 
-	/**
+	/*
 	 * <p>Coerce the type to a standard SDL type or throw an illegal argument
 	 * exception if no coercion is possible.</p>
 	 *
@@ -172,59 +235,77 @@ public class SDL {
 	 *         Boolean, Calendar, SDLTimeSpan -> No change
 	 *     Byte[] -> byte[]
 	 *     Byte, Short -> Integer
-	 *     Date -> Calendar
+	 *     Date -> Instant
 	 *     }
 	 * </pre>
 	 *
-	 * @param obj An object to coerce
+	 * @param value An object to coerce
 	 * @return The value as a Java type, eg: String, Integer
 	 * @throws IllegalArgumentException if the type is coercible to a legal SDL
 	 *     type
 	 */
-	@SuppressWarnings("unchecked")
-	public static Object coerceOrFail(Object obj) {
-
-		if(obj==null)
-			return null;
-
-		if(obj instanceof String || obj instanceof Double ||
-		   obj instanceof Integer || obj instanceof Boolean ||
-		   obj instanceof BigDecimal || obj instanceof Long ||
-		   obj instanceof Character || obj instanceof Float ||
-		   obj instanceof Calendar || obj instanceof SDLTimeSpan) {
-
-			return obj;
-		}
-
-		Class c = obj.getClass();
-		if(c.isArray()) {
-			Class compType = c.getComponentType();
-
-			if(compType==byte.class)
-				return obj;
-
-			if(compType==Byte.class) {
-				Byte[] objBytes = (Byte[])obj;
-				byte[] bytes = new byte[objBytes.length];
-				for(int i=0;i<objBytes.length;i++)
-					bytes[i]=objBytes[i];
-
-				return bytes;
-			}
-		}
-
-		if(obj instanceof Date) {
-			Calendar cal = new GregorianCalendar();
-			cal.setTime((Date)obj);
-			return cal;
-		}
-
-		if(obj instanceof Byte || obj instanceof Short) {
-			return ((Number)obj).intValue();
-		}
-
-		throw new IllegalArgumentException(obj.getClass().getName() + " is not coercible to an SDL type");
-	}
+//	@SuppressWarnings("unchecked")
+//	public static SdlValue coerceOrFail(final SdlValue value) {
+//		if(value == null)
+//			return null;
+//
+//		final Object obj = value.getValue();
+//
+//		if(obj instanceof String) {
+//            return new SdlValue<>(String.class.cast(obj), SdlType.STRING);
+//        } else if(obj instanceof Double) {
+//            return new SdlValue<>(Double.class.cast(obj), SdlType.NUMBER);
+//        } else if(obj instanceof Integer) {
+//            return new SdlValue<>(Integer.class.cast(obj), SdlType.NUMBER);
+//        } else if(obj instanceof Boolean) {
+//            return new SdlValue<>(Boolean.class.cast(obj), SdlType.BOOLEAN);
+//        } else if(obj instanceof BigDecimal) {
+//            return new SdlValue<>(BigDecimal.class.cast(obj), SdlType.NUMBER);
+//        } else if(obj instanceof Long) {
+//            return new SdlValue<>(Long.class.cast(obj), SdlType.NUMBER);
+//        } else if(obj instanceof Character) {
+//            return new SdlValue<>(Character.class.cast(obj), SdlType.CHARACTER);
+//        } else if(obj instanceof Float) {
+//            return new SdlValue<>(Float.class.cast(obj), SdlType.NUMBER);
+//        } else if(obj instanceof ZonedDateTime) {
+//            return new SdlValue<>(ZonedDateTime.class.cast(obj), SdlType.DATETIME);
+//        } else if(obj instanceof LocalDateTime) {
+//            return new SdlValue<>(LocalDateTime.class.cast(obj), SdlType.DATETIME);
+//        } else if(obj instanceof LocalTime) {
+//            return new SdlValue<>(LocalTime.class.cast(obj), SdlType.TIME);
+//        } else if(obj instanceof LocalDate) {
+//            return new SdlValue<>(LocalDate.class.cast(obj), SdlType.DATE);
+//        } else if(obj instanceof Duration) {
+//			return new SdlValue<>(Duration.class.cast(obj), SdlType.DURATION);
+//		}
+//
+//		Class c = obj.getClass();
+//		if(c.isArray()) {
+//			Class compType = c.getComponentType();
+//
+//			if(compType==byte.class)
+//				return new SdlValue<>(obj, SdlType.BINARY);
+//
+//			if(compType==Byte.class) {
+//				Byte[] objBytes = (Byte[])obj;
+//				byte[] bytes = new byte[objBytes.length];
+//				for(int i=0;i<objBytes.length;i++)
+//					bytes[i]=objBytes[i];
+//
+//				return new SdlValue<>(bytes, SdlType.BINARY);
+//			}
+//		}
+//
+//		if(obj instanceof Date) {
+//			return new SdlValue<>(Date.class.cast(obj).toInstant(), SdlType.DATE);
+//		}
+//
+//		if(obj instanceof Byte || obj instanceof Short) {
+//			return new SdlValue<>( ((Number)obj).intValue() , SdlType.NUMBER);
+//		}
+//
+//		throw new IllegalArgumentException(obj.getClass().getName() + " is not coercible to an SDL type");
+//	}
 
 	/**
 	 * Validates an SDL identifier String.  SDL Identifiers must start with a
@@ -235,9 +316,9 @@ public class SDL {
 	 * @throws IllegalArgumentException if the identifier is not legal
 	 */
 	public static void validateIdentifier(String identifier) {
-		if(identifier==null || identifier.length()==0)
-			throw new IllegalArgumentException("SDL identifiers cannot be " +
-					"null or empty.");
+		if(identifier==null || identifier.length()==0) {
+            throw new IllegalArgumentException("SDL identifiers cannot be null or empty.");
+        }
 
 		if(!Character.isJavaIdentifierStart(identifier.charAt(0)))
 			throw new IllegalArgumentException("'" + identifier.charAt(0) +
@@ -267,28 +348,41 @@ public class SDL {
 	 *         represent a valid SDL literal
 	 * @throws NumberFormatException If the text represents a malformed number.
 	 */
-	public static Object value(String literal) {
-		if(literal==null)
-			throw new IllegalArgumentException("literal argument to SDL.value(String) cannot be null");
+	@Deprecated
+	public static SdlValue value(String literal) {
+		if(literal==null) {
+            throw new IllegalArgumentException("literal argument to SDL.value(String) cannot be null");
+        }
 
-		if(literal.startsWith("\"") || literal.startsWith("`"))
-			return Parser.parseString(literal);
+		if(literal.startsWith("\""))
+			return new SdlValue<>(Parser.parseString(literal), SdlType.STRING);
+        if(literal.startsWith("`"))
+            return new SdlValue<>(Parser.parseMultilineString(literal), SdlType.STRING_MULTILINE);
 		if(literal.startsWith("'"))
-			return Parser.parseCharacter(literal);
+			return new SdlValue<>(Parser.parseCharacter(literal), SdlType.CHARACTER);
 		if(literal.equals("null"))
-			return null;
+			return new SdlValue<>(null, SdlType.NULL);
 		if(literal.equals("true") || literal.equals("on"))
-			return Boolean.TRUE;
+			return new SdlValue<>(Boolean.TRUE, SdlType.BOOLEAN);
 		if(literal.equals("false") || literal.equals("off"))
-			return Boolean.FALSE;
+			return new SdlValue<>(Boolean.FALSE, SdlType.BOOLEAN);
 		if(literal.startsWith("["))
-			return Parser.parseBinary(literal);
-		if(literal.charAt(0)!='/' && literal.indexOf('/')!=-1)
-			return Parser.parseDateTime(literal);
-		if(literal.charAt(0)!=':' && literal.indexOf(':')!=-1)
-			return Parser.parseTimeSpan(literal);
-		if("01234567890-.".indexOf(literal.charAt(0))!=-1)
-			return Parser.parseNumber(literal);
+			return new SdlValue<>(Parser.parseBinary(literal), SdlType.BINARY);
+		if(literal.matches("\\d+[-|/]\\d+[-|/]\\d+")) { //literal.matches("\\d+/\\d+/\\d+")) {
+            return new SdlValue<>(Parser.parseDate(literal), SdlType.DATE);
+        }
+        if(literal.matches(Parser.DATETIME_REGEX)) { // "(\\d+/\\d+/\\d+) ((\\d+:\\d+:\\d+(.\\d+)?)(-\\w+)?)"
+		    return literal.contains("-") ?
+                new SdlValue<>(Parser.parseZonedDateTime(literal), SdlType.DATETIME) :
+                new SdlValue<>(Parser.parseLocalDateTime(literal), SdlType.DATETIME);
+        }
+
+		if(literal.matches(Parser.TIMESPAN_REGEX)) { // "-?(\\d+d:)?(\\d+:\\d+:\\d+)(.\\d+)?"
+            return new SdlValue<>(Parser.parseTimeSpan(literal), SdlType.DURATION);
+        }
+		if("01234567890-.".indexOf(literal.charAt(0)) != -1) {
+            return new SdlValue<>(Parser.parseNumber(literal), SdlType.NUMBER);
+        }
 
 		throw new IllegalArgumentException("String " + literal + " does not represent an SDL type.");
 	}
@@ -355,7 +449,7 @@ public class SDL {
 	 * @throws IllegalArgumentException If the string is null or contains
 	 *     literals that cannot be parsed or the map is malformed
 	 */
-	public static SortedMap<String,Object> map(final String attributeString) {
+	public static SortedMap<String,SdlValue> map(final String attributeString) {
 		if(attributeString==null) {
             throw new IllegalArgumentException("attributeString argument to SDL.map(String) cannot be null");
         }

@@ -18,9 +18,12 @@ package com.singingbush.sdl;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.time.*;
 import java.util.*;
 
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,7 +34,7 @@ import static org.junit.Assert.*;
  *
  * @author Daniel Leuck
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "ConstantConditions"})
 public class SdlTest {
 
 	private static PrintWriter out = new PrintWriter(System.out, true);
@@ -65,28 +68,28 @@ public class SdlTest {
 		// Test to make sure Tag ignores the order in which attributes are
 		// added.
 		final Tag t1 = new Tag("test");
-		t1.setAttribute("foo", "bar");
-		t1.setAttribute("john", "doe");
+		t1.setAttribute("foo", new SdlValue<>("bar", SdlType.STRING));
+		t1.setAttribute("john", new SdlValue<>("doe", SdlType.STRING));
 
         final Tag t2 = new Tag("test");
-		t2.setAttribute("john", "doe");
-		t2.setAttribute("foo", "bar");
+		t2.setAttribute("john", new SdlValue<>("doe", SdlType.STRING));
+		t2.setAttribute("foo", new SdlValue<>("bar", SdlType.STRING));
 
 		assertEquals("Tag should ignore the order in which attributes are added", t1, t2);
 
-		t2.setValue("item");
+		t2.setValue(new SdlValue<>("item", SdlType.STRING));
 		assertNotEquals("tags with different structures should return false from .equals()", t1, t2);
 
 		t2.removeValue("item");
-		t2.setAttribute("another", "attribute");
+		t2.setAttribute("another", new SdlValue<>("attribute", SdlType.STRING));
 		assertNotEquals("tags with different structures should return false from .equals()", t1, t2);
 
 		out.println(" Checking attributes namespaces...");
 
-		t2.setAttribute("name", "bill");
-		t2.setAttribute("private", "smoker", true);
-		t2.setAttribute("public", "hobby", "hiking");
-		t2.setAttribute("private", "nickname", "tubby");
+		t2.setAttribute("name", new SdlValue<>("bill", SdlType.STRING));
+		t2.setAttribute("private", "smoker", new SdlValue<>(true, SdlType.BOOLEAN));
+		t2.setAttribute("public", "hobby", new SdlValue<>("hiking", SdlType.STRING));
+		t2.setAttribute("private", "nickname", new SdlValue<>("tubby", SdlType.STRING));
 
         final SortedMap<String, Object> namespacedAttribs = t2.getAttributesForNamespace("private");
 
@@ -210,7 +213,7 @@ public class SdlTest {
 
 		out.println("Doing null test...");
 
-		assertEquals(NULL_DECLARATION, root.getChild("nothing").getValue(), null);
+		assertNull(NULL_DECLARATION, root.getChild("nothing").getValue());
 	}
 
 	@Test
@@ -238,37 +241,49 @@ public class SdlTest {
 		out.println("Doing time span tests...");
 
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time1").getValue(),
-				new SDLTimeSpan(0,12,30,0,0));
+            Duration.ofHours(12).plusMinutes(30));
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time2").getValue(),
-				new SDLTimeSpan(0,24,0,0,0));
+            Duration.ofHours(24));
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time3").getValue(),
-				new SDLTimeSpan(0,1,0,0,0));
+            Duration.ofHours(1));
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time4").getValue(),
-				new SDLTimeSpan(0,1,0,0,0));
+            Duration.ofHours(1));
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time5").getValue(),
-				new SDLTimeSpan(0,12,30,2,0));
+            Duration.ofHours(12).plusMinutes(30).plusSeconds(2));
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time6").getValue(),
-				new SDLTimeSpan(0,12,30,23,0));
-		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time7").getValue(),
-				new SDLTimeSpan(0,12,30,23,100));
-		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time8").getValue(),
-				new SDLTimeSpan(0,12,30,23,120));
-		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time9").getValue(),
-				new SDLTimeSpan(0,12,30,23,123));
+            Duration.ofHours(12).plusMinutes(30).plusSeconds(23));
+
+		assertEquals("time7 12:30:23.1",
+            Duration.ofHours(12).plusMinutes(30).plusSeconds(23).plusMillis(1),
+            root.getChild("time7").getValue());
+
+		assertEquals("time8 12:30:23.12",
+            Duration.ofHours(12).plusMinutes(30).plusSeconds(23).plusMillis(12),
+            root.getChild("time8").getValue());
+
+		assertEquals("time9 12:30:23.123",
+            Duration.ofHours(12).plusMinutes(30).plusSeconds(23).plusMillis(123),
+            root.getChild("time9").getValue());
 
 		out.println(" Checking time spans with days...");
-		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time10").getValue(),
-				new SDLTimeSpan(34,12,30,23,100));
-		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time11").getValue(),
-				new SDLTimeSpan(1,12,30,0,0));
-		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time12").getValue(),
-				new SDLTimeSpan(5,12,30,23,123));
+
+		assertEquals("time10 34d:12:30:23.1",
+            Duration.ofDays(34).plusHours(12).plusMinutes(30).plusSeconds(23).plusMillis(1),
+            root.getChild("time10").getValue());
+
+		assertEquals("time11 1d:12:30:0",
+            Duration.ofDays(1).plusHours(12).plusMinutes(30),
+            root.getChild("time11").getValue());
+
+		assertEquals("time12 5d:12:30:23.123",
+            Duration.ofDays(5).plusHours(12).plusMinutes(30).plusSeconds(23).plusMillis(123),
+            root.getChild("time12").getValue());
 
 		out.println(" Checking negative time spans...");
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time13").getValue(),
-				new SDLTimeSpan(0,-12,-30,-23,-123));
+            Duration.ofHours(12).plusMinutes(30).plusSeconds(23).plusMillis(123).negated());
 		assertEquals(TIME_SPAN_DECLARATIONS, root.getChild("time14").getValue(),
-				new SDLTimeSpan(-5,-12,-30,-23,-123));
+            Duration.ofDays(5).plusHours(12).plusMinutes(30).plusSeconds(23).plusMillis(123).negated());
 	}
 
 	@Test
@@ -278,18 +293,29 @@ public class SdlTest {
 
 		out.println("Doing date time tests...");
 
-		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time1").getValue(),
-				getDateTime(2005,12,31,12,30,0,0,null));
-		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time2").getValue(),
-				getDateTime(1882,5,2,12,30,0,0,null));
-		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time3").getValue(),
-				getDateTime(2005,12,31,1,0,0,0,null));
-		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time4").getValue(),
-				getDateTime(1882,5,2,1,0,0,0,null));
-		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time5").getValue(),
-				getDateTime(2005,12,31,12,30,23,120,null));
-		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time6").getValue(),
-				getDateTime(1882,5,2,12,30,23,123,null));
+		assertEquals(DATE_TIME_DECLARATIONS + " : date_time1",
+            getDateTime(2005,12,31,12,30,0,0),
+            root.getChild("date_time1").getValue());
+
+		assertEquals(DATE_TIME_DECLARATIONS + " : date_time2",
+            getDateTime(1882,5,2,12,30,0,0),
+            root.getChild("date_time2").getValue());
+
+		assertEquals(DATE_TIME_DECLARATIONS + " : date_time3",
+            getDateTime(2005,12,31,1,0,0,0),
+            root.getChild("date_time3").getValue());
+
+		assertEquals(DATE_TIME_DECLARATIONS + " : date_time4",
+            getDateTime(1882,5,2,1,0,0,0),
+            root.getChild("date_time4").getValue());
+
+		assertEquals(DATE_TIME_DECLARATIONS + " : date_time5",
+            getDateTime(2005,12,31,12,30,23,12),
+            root.getChild("date_time5").getValue());
+
+		assertEquals(DATE_TIME_DECLARATIONS + " : date_time6",
+            getDateTime(1882,5,2,12,30,23,123),
+            root.getChild("date_time6").getValue());
 
 		out.println(" Checking timezones...");
 		assertEquals(DATE_TIME_DECLARATIONS, root.getChild("date_time7").getValue(),
@@ -348,42 +374,49 @@ public class SdlTest {
 
 		out.println("Doing values tests...");
 
-		assertEquals(VALUES, root.getChild("values1").getValues(), list("hi"));
-		assertEquals(VALUES, root.getChild("values2").getValues(), list("hi","ho"));
-		assertEquals(VALUES, root.getChild("values3").getValues(), list(1, "ho"));
-		assertEquals(VALUES, root.getChild("values4").getValues(), list("hi",5));
-		assertEquals(VALUES, root.getChild("values5").getValues(), list(1,2));
-		assertEquals(VALUES, root.getChild("values6").getValues(), list(1,2,3));
-		assertEquals(VALUES, root.getChild("values7").getValues(),
-				list(null,"foo",false,getDate(1980,12,5)));
-		assertEquals(VALUES, root.getChild("values8").getValues(),
-				list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0,null),
-						"there", new SDLTimeSpan(0,15,23,12,234)));
-		assertEquals(VALUES, root.getChild("values9").getValues(),
-				list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0,null),
-						"there", getDateTime(1989,8,12,15,23,12,234,"JST")));
-		assertEquals(VALUES, root.getChild("values10").getValues(),
-				list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0,null),
-						"there", new SDLTimeSpan(0,15,23,12,234), "more stuff"));
-		assertEquals(VALUES, root.getChild("values11").getValues(),
-				list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0,null),
-						"there", new SDLTimeSpan(123,15,23,12,234),
-						"more stuff here"));
-		assertEquals(VALUES, root.getChild("values12").getValues(), list(1,3));
-		assertEquals(VALUES, root.getChild("values13").getValues(), list(1,3));
-		assertEquals(VALUES, root.getChild("values14").getValues(), list(1,3));
-		assertEquals(VALUES, root.getChild("values15").getValues(), list(1,2,4,5,6));
-		assertEquals(VALUES, root.getChild("values16").getValues(), list(1,2,5));
-		assertEquals(VALUES, root.getChild("values17").getValues(), list(1,2,5));
-		assertEquals(VALUES, root.getChild("values18").getValues(), list(1,2,7));
-		assertEquals(VALUES, root.getChild("values19").getValues(),
-				list(1,3,5,7));
-		assertEquals(VALUES, root.getChild("values20").getValues(),
-				list(1,3,5));
-		assertEquals(VALUES, root.getChild("values21").getValues(),
-				list(1,3,5));
-		assertEquals(VALUES, root.getChild("values22").getValues(),
-				list("hi","ho","ho",5,"hi"));
+		assertEquals(VALUES, list("hi"), root.getChild("values1").getValues());
+		assertEquals(VALUES, list("hi", "ho"), root.getChild("values2").getValues());
+		assertEquals(VALUES, list(1, "ho"), root.getChild("values3").getValues());
+		assertEquals(VALUES, list("hi", 5), root.getChild("values4").getValues());
+		assertEquals(VALUES, list(1, 2), root.getChild("values5").getValues());
+		assertEquals(VALUES, list(1, 2, 3), root.getChild("values6").getValues());
+
+		assertEquals(VALUES,
+            list(null,"foo",false, getDate(1980,12,5)),
+            root.getChild("values7").getValues());
+
+		assertEquals(VALUES,
+            list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0),
+                "there", Duration.ofHours(15).plusMinutes(23).plusSeconds(12).plusMillis(234)),
+            root.getChild("values8").getValues());
+
+		assertEquals(VALUES,
+            list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0),
+                "there", getDateTime(1989,8,12,15,23,12,234,"JST")),
+            root.getChild("values9").getValues());
+
+		assertEquals(VALUES,
+            list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0),
+                "there", Duration.ofHours(15).plusMinutes(23).plusSeconds(12).plusMillis(234), "more stuff"),
+            root.getChild("values10").getValues());
+
+		assertEquals(VALUES,
+            list(null, "foo", false, getDateTime(1980,12,5,12,30,0,0),
+                "there", Duration.ofDays(123).plusHours(15).plusMinutes(23).plusSeconds(12).plusMillis(234),
+                "more stuff here"),
+            root.getChild("values11").getValues());
+
+		assertEquals(VALUES, list(1,3), root.getChild("values12").getValues());
+		assertEquals(VALUES, list(1,3), root.getChild("values13").getValues());
+		assertEquals(VALUES, list(1,3), root.getChild("values14").getValues());
+		assertEquals(VALUES, list(1,2,4,5,6), root.getChild("values15").getValues());
+		assertEquals(VALUES, list(1,2,5), root.getChild("values16").getValues());
+		assertEquals(VALUES, list(1,2,5), root.getChild("values17").getValues());
+		assertEquals(VALUES, list(1,2,7), root.getChild("values18").getValues());
+		assertEquals(VALUES, list(1,3,5,7), root.getChild("values19").getValues());
+		assertEquals(VALUES, list(1,3,5), root.getChild("values20").getValues());
+		assertEquals(VALUES, list(1,3,5), root.getChild("values21").getValues());
+		assertEquals(VALUES, list("hi","ho","ho",5,"hi"), root.getChild("values22").getValues());
 	}
 
 	@Test
@@ -393,23 +426,46 @@ public class SdlTest {
 
 		out.println("Doing attribute tests...");
 
-		assertEquals(ATTRIBUTES, root.getChild("atts1").getAttributes(),
-				map("name","joe"));
-		assertEquals(ATTRIBUTES, root.getChild("atts2").getAttributes(),
-				map("size",5));
-		assertEquals(ATTRIBUTES, root.getChild("atts3").getAttributes(),
-				map("name","joe","size",5));
-		assertEquals(ATTRIBUTES, root.getChild("atts4").getAttributes(),
-				map("name","joe","size",5,"smoker",false));
-		assertEquals(ATTRIBUTES, root.getChild("atts5").getAttributes(),
-				map("name","joe","smoker",false));
-		assertEquals(ATTRIBUTES, root.getChild("atts6").getAttributes(),
-				map("name","joe","smoker",false));
-		assertEquals(ATTRIBUTES, root.getChild("atts7").getAttributes(),
-				map("name","joe"));
-		assertEquals(ATTRIBUTES, root.getChild("atts8").getAttributes(),
-				map("name","joe","size",5,"smoker",false,"text","hi","birthday",
-						getDate(1972,5,23)));
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING)),
+            root.getChild("atts1").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("size", new SdlValue<>(5, SdlType.NUMBER)),
+            root.getChild("atts2").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING),
+                "size", new SdlValue<>(5, SdlType.NUMBER)),
+            root.getChild("atts3").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING),
+                "size", new SdlValue<>(5, SdlType.NUMBER),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)),
+            root.getChild("atts4").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)),
+            root.getChild("atts5").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)),
+            root.getChild("atts6").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING)),
+            root.getChild("atts7").getAttributes());
+
+		assertEquals(ATTRIBUTES,
+            map("name", new SdlValue<>("joe", SdlType.STRING),
+                "size", new SdlValue<>(5, SdlType.NUMBER),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN),
+                "text", new SdlValue<>("hi", SdlType.STRING),
+                "birthday", new SdlValue<>(getDate(1972,5,23), SdlType.DATE)),
+            root.getChild("atts8").getAttributes());
 
         assertTrue(ATTRIBUTES,
                 Arrays.equals(
@@ -426,52 +482,79 @@ public class SdlTest {
 
 		out.println("Doing values and attributes tests...");
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts1")
-				.getValues(), list("joe"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts1")
-				.getAttributes(), map("size", 5));
+		assertEquals("valatts1 \"joe\" size=5",
+            list("joe"),
+            root.getChild("valatts1").getValues());
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts2")
-				.getValues(), list("joe"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts2")
-				.getAttributes(), map("size", 5));
+		assertEquals("valatts1 \"joe\" size=5",
+            map("size", new SdlValue<>(5, SdlType.NUMBER)),
+            root.getChild("valatts1").getAttributes());
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts3")
-				.getValues(), list("joe"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts3")
-				.getAttributes(), map("size", 5));
+		assertEquals(VALUES_AND_ATTRIBUTES, list("joe"),
+            root.getChild("valatts2").getValues());
+		assertEquals(VALUES_AND_ATTRIBUTES, map("size", new SdlValue<>(5, SdlType.NUMBER)),
+            root.getChild("valatts2").getAttributes());
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts4")
-				.getValues(), list("joe"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts4")
-				.getAttributes(), map("size", 5, "weight", 160, "hat", "big"));
+		assertEquals(VALUES_AND_ATTRIBUTES, list("joe"),
+            root.getChild("valatts3").getValues());
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            map("size", new SdlValue<>(5, SdlType.NUMBER)),
+            root.getChild("valatts3").getAttributes());
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts5")
-				.getValues(), list("joe", "is a\n nice guy"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts5")
-				.getAttributes(), map("size", 5, "smoker", false));
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            list("joe"),
+            root.getChild("valatts4").getValues());
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts6")
-				.getValues(), list("joe", "is a\n nice guy"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts6")
-				.getAttributes(), map("size", 5, "house", "big and\n blue"));
+		assertEquals("valatts4 \"joe\" size=5 weight=160 hat=\"big\"",
+            map("size", new SdlValue<>(5, SdlType.NUMBER),
+                "weight", new SdlValue<>(160, SdlType.NUMBER),
+                "hat", new SdlValue<>("big", SdlType.STRING)),
+            root.getChild("valatts4").getAttributes()
+        );
+
+		assertEquals("valatts5 \"joe\" `is a\n nice guy` size=5 smoker=false",
+            root.getChild("valatts5").getValues(),
+            list("joe", "is a\n nice guy"));
+
+		assertEquals("valatts5 \"joe\" `is a\n nice guy` size=5 smoker=false",
+            root.getChild("valatts5").getAttributes(),
+            map("size", new SdlValue<>(5, SdlType.NUMBER),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)));
+
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            list("joe", "is a\n nice guy"),
+            root.getChild("valatts6").getValues());
+
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            map("size", new SdlValue<>(5, SdlType.NUMBER),
+                "house", new SdlValue<>("big and\n blue", SdlType.STRING_MULTILINE)),
+            root.getChild("valatts6").getAttributes());
 
 		//////////
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts7")
-				.getValues(), list("joe", "is a\n nice guy"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts7")
-				.getAttributes(), map("size", 5, "smoker", false));
+		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts7").getValues(),
+            list("joe", "is a\n nice guy"));
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts8")
-				.getValues(), list("joe", "is a\n nice guy"));
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts8")
-				.getAttributes(), map("size", 5, "smoker", false));
+		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts7").getAttributes(),
+            map("size", new SdlValue<>(5, SdlType.NUMBER),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)));
 
-		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts9")
-				.getValues(),list("joe", "is a\n nice guy"));
-			assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts9")
-					.getAttributes(), map("size", 5, "smoker", false));
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            list("joe", "is a\n nice guy"),
+            root.getChild("valatts8").getValues());
+
+		assertEquals(VALUES_AND_ATTRIBUTES, root.getChild("valatts8").getAttributes(),
+            map("size", new SdlValue<>(5, SdlType.NUMBER),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)));
+
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            list("joe", "is a\n nice guy"),
+            root.getChild("valatts9").getValues());
+
+		assertEquals(VALUES_AND_ATTRIBUTES,
+            map("size", new SdlValue<>(5, SdlType.NUMBER),
+                "smoker", new SdlValue<>(false, SdlType.BOOLEAN)),
+            root.getChild("valatts9").getAttributes());
 	}
 
 	@Test
@@ -496,10 +579,10 @@ public class SdlTest {
 		assertEquals(CHILDREN, grandparent.getChildren("son", true).size(), 2);
 
 		Tag grandparent2 = root.getChild("grandparent2");
-		assertEquals(CHILDREN, grandparent2.getChildren("child", true)
-				.size(), 5);
-		assertEquals(CHILDREN, grandparent2.getChild("daughter", true)
-				.getAttribute("birthday"),getDate(1976,04,18));
+		assertEquals(CHILDREN, grandparent2.getChildren("child", true).size(), 5);
+		assertEquals(CHILDREN,
+            getDate(1976,4,18),
+            grandparent2.getChild("daughter", true).getAttribute("birthday"));
 
 		Tag files = root.getChild("files");
 
@@ -522,12 +605,16 @@ public class SdlTest {
 		assertEquals(NAMESPACES, root.getChildrenForNamespace("person", true)
 				.size(), 8);
 
-		Tag grandparent2 = root.getChild("grandparent3");
+		final Tag t = root.getChild("grandparent3");
+
+        assertEquals(NAMESPACES, 2, t.getChildrenForNamespace("person", false).size());
+        assertEquals(NAMESPACES, 6, t.getChildrenForNamespace("person", true).size());
 
 		// get only the attributes for Akiko in the public namespace
-		assertEquals(NAMESPACES, grandparent2.getChild("daughter", true)
-				.getAttributesForNamespace("public"), map("name", "Akiko",
-						"birthday", getDate(1976,04,18)));
+        assertEquals("namespaces should work",
+            map("name", "Akiko",
+                "birthday", LocalDate.of(1976,4,18)),
+            t.getChild("daughter", true).getAttributesForNamespace("public"));
 	}
 
     @Test
@@ -580,82 +667,19 @@ public class SdlTest {
 	// Utility methods
 	////////////////////////////////////////////////////////////////////////////
 
-	private static Calendar getDate(int year, int month, int day) {
-		GregorianCalendar gc = new GregorianCalendar(year, month-1, day);
-
-		// force calculations
-		gc.get(Calendar.YEAR);
-		gc.get(Calendar.MONTH);
-		gc.get(Calendar.DAY_OF_MONTH);
-
-		gc.clear(Calendar.HOUR_OF_DAY);
-		gc.clear(Calendar.MINUTE);
-		gc.clear(Calendar.SECOND);
-		gc.clear(Calendar.MILLISECOND);
-
-		return gc;
+	private static LocalDate getDate(int year, int month, int day) {
+		return LocalDate.of(year, month, day);
 	}
 
-	private static Calendar getTime(int hour, int minute, int second,
-			int millisecond, String timeZone) {
+    private static LocalDateTime getDateTime(int year, int month, int day, int hour,
+                                             int minute, int second, int millisecond) {
+        return LocalDateTime.of(year, month, day, hour, minute, second, millisecond*1_000_000);
+    }
 
-		GregorianCalendar gc = new GregorianCalendar(1970,1,1);
-
-		if(timeZone!=null)
-			gc.setTimeZone(TimeZone.getTimeZone(timeZone));
-		else
-			gc.setTimeZone(TimeZone.getDefault());
-
-		gc.clear(Calendar.YEAR);
-		gc.clear(Calendar.MONTH);
-		gc.clear(Calendar.DAY_OF_MONTH);
-
-		gc.set(Calendar.HOUR_OF_DAY, hour);
-		gc.set(Calendar.MINUTE, minute);
-		gc.set(Calendar.SECOND, second);
-		gc.set(Calendar.MILLISECOND, millisecond);
-
-		// force calculations
-		gc.get(Calendar.HOUR_OF_DAY);
-		gc.get(Calendar.MINUTE);
-		gc.get(Calendar.SECOND);
-		gc.get(Calendar.MILLISECOND);
-
-		gc.clear(Calendar.YEAR);
-		gc.clear(Calendar.MONTH);
-		gc.clear(Calendar.DAY_OF_YEAR);
-
-		return gc;
-	}
-
-	private static Calendar getDateTime(int year, int month, int day, int hour,
-			int minute, int second, int millisecond, String timeZone) {
-
-		TimeZone tz = (timeZone==null) ? TimeZone.getDefault() :
-			TimeZone.getTimeZone(timeZone);
-
-		GregorianCalendar gc = new GregorianCalendar(tz);
-
-		gc.set(Calendar.YEAR, year);
-		gc.set(Calendar.MONTH, month-1);
-		gc.set(Calendar.DAY_OF_MONTH, day);
-
-		gc.set(Calendar.HOUR_OF_DAY, hour);
-		gc.set(Calendar.MINUTE, minute);
-		gc.set(Calendar.SECOND, second);
-		gc.set(Calendar.MILLISECOND, millisecond);
-
-		// force calculations
-		gc.get(Calendar.YEAR);
-		gc.get(Calendar.MONTH);
-		gc.get(Calendar.DAY_OF_MONTH);
-
-		gc.get(Calendar.HOUR_OF_DAY);
-		gc.get(Calendar.MINUTE);
-		gc.get(Calendar.SECOND);
-		gc.get(Calendar.MILLISECOND);
-
-		return gc;
+	private static ZonedDateTime getDateTime(int year, int month, int day, int hour,
+                                             int minute, int second, int millisecond, String timeZone) {
+        final ZoneId zoneId = timeZone != null ? TimeZone.getTimeZone(timeZone).toZoneId() : ZoneId.systemDefault();
+        return ZonedDateTime.of(year, month, day, hour, minute, second, millisecond*1_000_000, zoneId);
 	}
 
 	private static List list(Object... obs) {
@@ -670,7 +694,7 @@ public class SdlTest {
 	 */
 	private static Map map(Object... obs) {
 		TreeMap map = new TreeMap();
-		for(int i=0; i<obs.length;)
+		for(int i = 0; i < obs.length;)
 			map.put(obs[i++], obs[i++]);
 		return map;
 	}

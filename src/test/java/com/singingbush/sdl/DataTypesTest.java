@@ -3,6 +3,7 @@ package com.singingbush.sdl;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.time.*;
 import java.util.GregorianCalendar;
 
 import static org.junit.Assert.*;
@@ -15,57 +16,55 @@ public class DataTypesTest {
 
     @Test // "String \"with escape support\""
     public void testStringsWithEscapeSupport() {
-        final Object value = SDL.value("\"String \\\"with escape support\\\"\"");
+        final SdlValue value = SDL.value("\"String\t\"with escape support\"\"");
         assertNotNull(value);
-        assertTrue("Should be an String", value.getClass().isAssignableFrom(String.class));
-        final String stringValue = String.class.cast(value);
-        assertEquals("String \\\"with escape support\\\"", stringValue);
+        assertTrue("Should be an String", value.getValue().getClass().isAssignableFrom(String.class));
+        assertEquals("\"String\\t\\\"with escape support\\\"\"", value.getText());
     }
 
     @Test // `String "without escape support"`
     public void testStringsWithoutEscapeSupport() {
-        final Object value = SDL.value("`String \"without escape support\"`");
+        final SdlValue value = SDL.value("`String \"without escape support\"`");
         assertNotNull(value);
-        assertTrue("Should be an String", value.getClass().isAssignableFrom(String.class));
-        final String stringValue = String.class.cast(value);
-        assertEquals("String \"without escape support\"", stringValue);
+        assertTrue("Should be an String", value.getValue().getClass().isAssignableFrom(String.class));
+        assertEquals("`String \"without escape support\"`", value.getText());
     }
 
     // Numbers
 
     @Test // 10 == 32-bit numbers (Integer)
     public void test32bitIntegers() {
-        final Object value = SDL.value("10");
+        final SdlValue value = SDL.value("10");
         assertNotNull(value);
-        assertTrue("Should be an Integer", value.getClass().isAssignableFrom(Integer.class));
+        assertTrue("Should be an Integer", value.getValue().getClass().isAssignableFrom(Integer.class));
     }
 
     @Test // 10.5 == 64-bit floating point numbers (Double)
     public void test64bitDouble() {
-        final Object value = SDL.value("10.5");
+        final SdlValue value = SDL.value("10.5");
         assertNotNull(value);
-        assertTrue("Should be an Double", value.getClass().isAssignableFrom(Double.class));
+        assertTrue("Should be an Double", value.getValue().getClass().isAssignableFrom(Double.class));
     }
 
     @Test // 10L == 64-bit numbers (Long)
     public void test64bitLong() {
-        final Object value = SDL.value("10L");
+        final SdlValue value = SDL.value("10L");
         assertNotNull(value);
-        assertTrue("Should be an Long", value.getClass().isAssignableFrom(Long.class));
+        assertTrue("Should be an Long", value.getValue().getClass().isAssignableFrom(Long.class));
     }
 
     @Test // 10BD == 128-bit numbers (BigDecimal)
     public void test128bitBigDecimal() {
-        final Object value = SDL.value("10BD");
+        final SdlValue value = SDL.value("10BD");
         assertNotNull(value);
-        assertTrue("Should be an BigDecimal", value.getClass().isAssignableFrom(BigDecimal.class));
+        assertTrue("Should be an BigDecimal", value.getValue().getClass().isAssignableFrom(BigDecimal.class));
     }
 
     @Test // 10.5f == 32-bit float
     public void test32bitFloat() {
-        final Object value = SDL.value("10.5f");
+        final SdlValue value = SDL.value("10.5f");
         assertNotNull(value);
-        assertTrue("Should be an Float", value.getClass().isAssignableFrom(Float.class));
+        assertTrue("Should be an Float", value.getValue().getClass().isAssignableFrom(Float.class));
     }
 
     @Test
@@ -79,64 +78,74 @@ public class DataTypesTest {
 
     @Test // "null" should be parsed as a null
     public void testNull() {
-        final Object value = SDL.value("null");
-        assertNull(value);
+        final SdlValue value = SDL.value("null");
+        assertNull(value.getValue());
+        assertEquals(SdlType.NULL, value.getType());
+        assertEquals("null", value.getText());
     }
 
     @Test // 2015/12/06 12:00:00.000-UTC // Date/time value (UTC timezone)
     public void testDateTimeWithZoneInfo() {
-        final Object value = SDL.value("2015/12/06 12:00:00.000-UTC");
+        final SdlValue value = SDL.value("2015/12/06 12:00:00.000-UTC");
         assertNotNull(value);
-        assertTrue("Should be an GregorianCalendar", value.getClass().isAssignableFrom(GregorianCalendar.class));
+        assertTrue("Should be a ZonedDateTime", value.getValue().getClass().isAssignableFrom(ZonedDateTime.class));
     }
 
     @Test // 2015/12/06 12:00:00.000 // Date/time value (local timezone)
     public void testDateTimeLocal() {
-        final Object value = SDL.value("2015/12/06 12:00:00.000");
+        final SdlValue value = SDL.value("2015/12/06 12:00:00.000");
         assertNotNull(value);
-        assertTrue("Should be an GregorianCalendar", value.getClass().isAssignableFrom(GregorianCalendar.class));
+        assertTrue("Should be a LocalDateTime", value.getValue().getClass().isAssignableFrom(LocalDateTime.class));
     }
 
     @Test // 2015/12/06 // Date value
     public void testDate() {
-        final Object value = SDL.value("2015/12/06");
+        final SdlValue value = SDL.value("2015/12/06");
         assertNotNull(value);
-        assertTrue("Should be an GregorianCalendar", value.getClass().isAssignableFrom(GregorianCalendar.class));
+        assertTrue("Should be a LocalDate", value.getValue().getClass().isAssignableFrom(LocalDate.class));
     }
 
     @Test // time
-    public void testTimeSDLTimeSpan() {
-        final Object value = SDL.value("12:14:34");
+    public void testTime() {
+        final SdlValue value = SDL.value("12:14:34");
         assertNotNull(value);
-        assertTrue("Should be an SDLTimeSpan", value.getClass().isAssignableFrom(SDLTimeSpan.class));
+        assertTrue("Should be a LocalTime", value.getValue().getClass().isAssignableFrom(Duration.class));
+        assertEquals("PT12H14M34S", value.getValue().toString());
+        assertEquals("12:14:34", value.getText());
     }
 
     @Test // time
-    public void testTimeSDLTimeSpan_withMillis() {
-        final Object value = SDL.value("12:14:34.123");
+    public void testTime_withMillis() {
+        final SdlValue value = SDL.value("12:14:34.123");
         assertNotNull(value);
-        assertTrue("Should be an SDLTimeSpan", value.getClass().isAssignableFrom(SDLTimeSpan.class));
+        assertTrue("Should be a LocalTime", value.getValue().getClass().isAssignableFrom(Duration.class));
+        //assertEquals("PT12H14M34.123S", value.getValue().toString());
+        assertEquals("PT12H14M34.123S", value.getValue().toString());
+        assertEquals("12:14:34.123", value.getText());
     }
 
     @Test // time
-    public void testTimeSDLTimeSpan_DaysHoursMinsSecs() {
-        final Object value = SDL.value("2d:12:14:34");
+    public void testTimeSpan_DaysHoursMinsSecs() {
+        final SdlValue value = SDL.value("2d:12:10:22");
         assertNotNull(value);
-        assertTrue("Should be an SDLTimeSpan", value.getClass().isAssignableFrom(SDLTimeSpan.class));
+        // maybe this should be period
+        assertTrue("Should be a Duration", value.getValue().getClass().isAssignableFrom(Duration.class));
+        assertEquals("PT60H10M22S", value.getValue().toString());
+        assertEquals("2d:12:10:22", value.getText());
     }
 
     @Test // base 64
     public void testBinaryData() {
-        final Object value = SDL.value("[sdf789GSfsb2+3324sf2]");
+        final SdlValue value = SDL.value("[sdf789GSfsb2+3324sf2]");
         assertNotNull(value);
-        assertTrue("Should be an byte[]", value.getClass().isAssignableFrom(byte[].class));
+        assertTrue("Should be an byte[]", value.getValue().getClass().isAssignableFrom(byte[].class));
     }
 
     private Boolean sdlBoolean(final String text) {
-        final Object value = SDL.value(text);
+        final SdlValue value = SDL.value(text);
         assertNotNull(value);
-        assertTrue("Should be an Boolean", value.getClass().isAssignableFrom(Boolean.class));
-        return Boolean.class.cast(value);
+        assertTrue("Should be an Boolean", value.getValue().getClass().isAssignableFrom(Boolean.class));
+        return Boolean.class.cast(value.getValue());
     }
 
 }

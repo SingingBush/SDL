@@ -40,6 +40,32 @@ public class ParserTest {
     }
 
     @Test
+    public void testMultiline() throws IOException, SDLParseException {
+        final String text = "xml `\n" +
+            "<root type=\"widget\">\n" +
+            "\t<color red=\"255\" green=\"0\" blue=\"0\"/>\n" +
+            "\t<text>Hi there!</text>\n" +
+            "</root>\n" +
+            "`";
+
+        final List<Tag> tags = new Parser(text).parse();
+
+        assertFalse(tags.isEmpty());
+        assertEquals(1, tags.size());
+        final Tag tag = tags.get(0);
+        assertEquals("xml", tag.getName());
+        assertEquals(1, tag.getValues().size());
+        assertEquals("\n" +
+            "<root type=\"widget\">\n" +
+            "\t<color red=\"255\" green=\"0\" blue=\"0\"/>\n" +
+            "\t<text>Hi there!</text>\n" +
+            "</root>\n", tag.getValue());
+
+//        assertEquals("A Tag::toString() should be able to recreate the original SDL", text, tag.stringValue());
+        assertEquals("A Tag::toString() should be able to recreate the original SDL", text, tag.toString());
+    }
+
+    @Test
     public void testDetails() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("details.sdl");
 
@@ -48,17 +74,17 @@ public class ParserTest {
         assertFalse(tags.isEmpty());
         assertEquals(7, tags.size());
         final Tag tag = new Tag("title");
-        tag.addValue("Some title");
+        tag.addValue(new SdlValue<>("Some title", SdlType.STRING));
         assertTrue(tags.contains(tag));
 
         assertTrue(tags.contains(new Tag("this-is_a.valid$tag-name")));
 
         final Tag rendererOpts = new Tag("renderer", "options");
-        rendererOpts.setValue("invisible");
+        rendererOpts.setValue(new SdlValue<>("invisible", SdlType.STRING));
         assertTrue(tags.contains(rendererOpts));
 
         final Tag physicsOpts = new Tag("physics", "options");
-        physicsOpts.setValue("nocollide");
+        physicsOpts.setValue(new SdlValue<>("nocollide", SdlType.STRING));
         assertTrue(tags.contains(physicsOpts));
     }
 

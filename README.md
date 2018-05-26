@@ -1,4 +1,4 @@
-[SDL](https://sdlang.org/) (Simple Declarative Language) for Java
+[SDLang](https://sdlang.org/) (Simple Declarative Language) for Java
 ============
 
 [![Build Status](https://travis-ci.org/SingingBush/SDL.svg?branch=master)](https://travis-ci.org/SingingBush/SDL)
@@ -30,8 +30,8 @@ The project seemed to be abandoned so I've forked it with the initial goal of
 - [x] Enabling continuous integration using [travis-ci.org](travis-ci.org)
 - [x] Reporting on Test Coverage using [coveralls.io](coveralls.io)
 - [x] Fixing existing bugs
-- [ ] Publishing build artifacts to maven
-- [ ] Potentially re-writing
+- [ ] Publish build artifacts to maven central
+- [x] re-write
 
 Daniel Leuck, the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
 
