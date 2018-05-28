@@ -591,9 +591,31 @@ public class SdlTest {
 
 		Tag matrix = root.getChild("matrix");
 
-		assertEquals(CHILDREN, matrix.getChildrenValues("content"),
+		assertEquals("matrix should be a list of lists", matrix.getChildrenValues("content"),
 				list(list(1,2,3),list(4,5,6)));
 	}
+
+    @Test
+    public void testMatrix2() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        final Tag t = root.getChild("matrix2");
+
+        assertEquals("matrix should be a list of lists", t.getChildrenValues("content"),
+            list(list(1,2,3),list(4,5,6)));
+    }
+
+    @Test
+    public void testMatrix3() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        final Tag t = root.getChild("matrix3");
+
+        assertEquals("matrix should be a list of lists", t.getChildrenValues("content"),
+            list(list(1,2,3),list(4,5,6)));
+    }
 
 	@Test
     public void testSemicolonsWithTwoLines() throws IOException, SDLParseException {
