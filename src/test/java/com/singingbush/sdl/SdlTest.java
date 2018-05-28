@@ -596,6 +596,58 @@ public class SdlTest {
 	}
 
 	@Test
+    public void testSemicolonsWithTwoLines() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        final Tag t = root.getChild("twoLines");
+
+        assertEquals("Should have 2 children", 2, t.getChildren().size());
+
+        assertEquals(list("line1", "line2"),
+            t.getChildrenValues("content"));
+    }
+
+    @Test
+    public void testSemicolonsWithThreeLines() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        Tag t = root.getChild("threeLines");
+
+        assertEquals("Should have 3 children", 3, t.getChildren().size());
+
+        assertEquals(list("line1", "line2", "line3"),
+            t.getChildrenValues("content"));
+    }
+
+    @Test
+    public void testSemicolonsWithFourLines() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        Tag t = root.getChild("fourLines");
+
+        assertEquals("Should have 4 children", 4, t.getChildren().size());
+
+        assertEquals(list("line1", "line2", 1, 2),
+            t.getChildrenValues("content"));
+    }
+
+    @Test
+    public void testSemicolonsWithSixLines() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        Tag t = root.getChild("sixLines");
+
+        assertEquals("Should have 6 children", 6, t.getChildren().size());
+
+        assertEquals(list("line1", "line2", "line3", 1, 2, 3),
+            t.getChildrenValues("content"));
+    }
+
+	@Test
 	public void testNamespaces() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
         final Tag root=new Tag("root").read(inputStream);

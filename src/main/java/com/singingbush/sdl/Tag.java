@@ -613,12 +613,13 @@ public class Tag implements Serializable {
 
 		for(final Tag c : children) {
             final List values = c.getValues();
-			if(values.isEmpty())
-				results.add(null);
-			else if(values.size()==1)
-				results.add(values.get(0));
-			else
-				results.add(values);
+			if(values.isEmpty()) {
+			    results.add(null);
+            } else if(values.size()==1) {
+                results.add(values.get(0));
+            } else {
+                results.add(values);
+            }
 		}
 
 		return results;
@@ -653,7 +654,10 @@ public class Tag implements Serializable {
 	 * @return An immutable view of the values.
 	 */
 	public List<Object> getValues() {
-		return valuesView.stream().map(SdlValue::getValue).collect(Collectors.toList());
+		return valuesView.stream()
+            .filter(Objects::nonNull)
+            .map(SdlValue::getValue)
+            .collect(Collectors.toList());
 	}
 
 	/*
@@ -986,12 +990,22 @@ public class Tag implements Serializable {
 		// output values
 		if(values != null && !values.isEmpty()) {
             for(final SdlValue value : values) {
-				if(skipValueSpace) {
+
+                if(skipValueSpace) {
                     skipValueSpace=false;
                 } else {
                     builder.append(" ");
                 }
                 builder.append(value.getText()); //builder.append(SDL.format(value));
+
+//				if(value != null) {
+//                    if(skipValueSpace) {
+//                        skipValueSpace=false;
+//                    } else {
+//                        builder.append(" ");
+//                    }
+//                    builder.append(value.getText()); //builder.append(SDL.format(value));
+//                }
 			}
 		}
 

@@ -42,7 +42,8 @@ class Parser {
 	private List<Token> toks;
 	private StringBuilder sb;
 	private boolean startEscapedQuoteLine;
-	private int lineNumber=-1, pos=0, lineLength=0, tokenStart=0;
+	private int lineNumber=-1, lineStart = 0, pos=0, lineLength=0, tokenStart=0;
+    private boolean semicolonTerminated = false;
 
 	/**
 	 * Create an SDL parser
@@ -137,6 +138,9 @@ class Parser {
 	 * @throws SDLParseException
 	 */
 	Tag constructTag(List<Token> toks) throws SDLParseException {
+	    if(lineNumber ==141) {
+	        int sdf=23;
+        }
 		if(toks.isEmpty())
 			// we have to use -2 for position rather than -1 for unknown because
 			// the parseException method adds 1 to line and position
@@ -314,7 +318,13 @@ class Parser {
 	 */
 	@Nullable
 	List<Token> getLineTokens() throws SDLParseException, IOException {
-		line = readLine();
+//		line = readLine();
+        if(semicolonTerminated) {
+            semicolonTerminated = false;
+        } else {
+            line = readLine();
+        }
+
 		if(line==null) {
             return null;
         }
@@ -326,10 +336,7 @@ class Parser {
 		for(;pos<lineLength; pos++) {
 			char c=line.charAt(pos);
 
-			if(sb!=null) {
-				toks.add(new Token(sb.toString(), lineNumber, tokenStart));
-				sb=null;
-			}
+            completeToken();
 
 			if(c=='"') {
 				// handle "" style strings including line continuations
@@ -337,7 +344,7 @@ class Parser {
 			} else if(c=='\'') {
 				// handle character literals
 				handleCharacterLiteral();
-			} else if("{}=:;".indexOf(c)!=-1) {
+			} else if("{}=:".indexOf(c)!=-1) {
 				// handle punctuation
 				toks.add(new Token(""+c, lineNumber, pos));
 				sb=null;
@@ -380,6 +387,15 @@ class Parser {
 				// handle identifiers
 				handleIdentifier();
 			} else if(c==';') {
+                if(toks.size()==0) {
+                    continue;
+                } else {
+                    semicolonTerminated=true;
+                }
+
+                pos++;
+                break;
+
 //				if( (pos+1) < lineLength ) {
 ////					toks.add(new Token(""+c, lineNumber, pos));
 ////					sb=null;
@@ -392,9 +408,7 @@ class Parser {
 			}
 		}
 
-		if(sb!=null) {
-			toks.add(new Token(sb.toString(), lineNumber, tokenStart));
-		}
+        completeToken();
 
 		// if toks are empty, try another line
 		// this seems a bit dangerous, but eventually we should get a null line
@@ -404,6 +418,13 @@ class Parser {
         }
 
 		return toks;
+	}
+
+	private void completeToken() throws SDLParseException {
+		if(sb != null) {
+			toks.add(new Token(sb.toString(), lineNumber, tokenStart));
+			sb = null;
+		}
 	}
 
 	private void addEscapedCharInString(char c) throws SDLParseException {
@@ -786,7 +807,7 @@ class Parser {
 	}
 
 	/**
-	 * Reads a "raw" line including lines with comments and blank lines
+	 * Reads a "raw" line including lines with comments and blank lines, increments line count.
 	 *
 	 * @return the next line or null at the end of the file.
 	 */
