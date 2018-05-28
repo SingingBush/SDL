@@ -66,6 +66,21 @@ public class ParserTest {
     }
 
     @Test
+    public void testSemicolons() throws IOException, SDLParseException {
+        final List<Tag> tags = new Parser("thing {\n    \"line1\";\"line2\"; \"line3\"\n    1; 2; 3;\n}").parse();
+
+        assertFalse(tags.isEmpty());
+        assertEquals(1, tags.size());
+        final Tag tag = tags.get(0);
+
+        final List<Tag> children = tag.getChildren();
+        assertEquals(6, children.size());
+
+        assertEquals(3L, children.stream().filter(c -> SdlType.STRING.equals(c.getSdlValue().getType())).count());
+        assertEquals(3L, children.stream().filter(c -> SdlType.NUMBER.equals(c.getSdlValue().getType())).count());
+    }
+
+    @Test
     public void testDetails() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("details.sdl");
 
