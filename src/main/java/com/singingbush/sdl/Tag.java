@@ -627,15 +627,13 @@ public class Tag implements Serializable {
 
 	/**
 	 * Add a value to this Tag.  The allowable types are String, Number,
-	 * Boolean, Character, byte[], Byte[] (coerced to byte[]), Calendar,
-	 * Date (coerced to Calendar), and null.  Passing any other type will
-	 * result in an IllegalArgumentException.
+	 * Boolean, Character, byte[], Byte[] (coerced to byte[]), Duration,
+     * ZonedDateTime, LocalDateTime, LocalDate, and null.
 	 *
 	 * @param value The value to add
-	 * @throws IllegalArgumentException if the value is not a legal SDL type
 	 */
 	public void addValue(SdlValue value) {
-		values.add(value); // SDL.coerceOrFail(value)
+		values.add(value);
 	}
 
 	/**
@@ -644,7 +642,7 @@ public class Tag implements Serializable {
 	 * @param value The value to remove
 	 * @return true If the value exists and is removed
 	 */
-	public boolean removeValue(Object value) {
+	public boolean removeValue(SdlValue value) {
 		return values.remove(value);
 	}
 

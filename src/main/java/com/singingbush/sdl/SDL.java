@@ -20,12 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.Base64;
@@ -108,30 +104,6 @@ public class SDL {
                 .format(ZonedDateTime.class.cast(object));
         } else if(Duration.class.isAssignableFrom(object.getClass())) {
 		    return timeSpanString(Duration.class.cast(object));
-		} else if(object instanceof Calendar) {
-			Calendar c = (Calendar)object;
-
-			if(c.isSet(Calendar.HOUR_OF_DAY)) {
-
-				// if no time components are set, consider this a date only
-				// instance
-				if(
-					c.get(Calendar.HOUR_OF_DAY)==0 &&
-					c.get(Calendar.MINUTE)==0 &&
-					c.get(Calendar.SECOND)==0 &&
-					c.get(Calendar.MILLISECOND)==0
-					) {
-					SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-					return sdf.format(c.getTime());
-				} else {
-					SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
-					sdf.setTimeZone(c.getTimeZone());
-					return sdf.format(c.getTime());
-				}
-			} else {
-				SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-				return sdf.format(c.getTime());
-			}
 		}
 
 		return String.valueOf(object);
@@ -232,7 +204,7 @@ public class SDL {
 	 * <pre>
 	 *     {@code
 	 *     String, Character, Integer, Long, Float, Double, BigDecimal,
-	 *         Boolean, Calendar, SDLTimeSpan -> No change
+	 *         Boolean, LocalDateTime, LocalDate, Duration -> No change
 	 *     Byte[] -> byte[]
 	 *     Byte, Short -> Integer
 	 *     Date -> Instant
