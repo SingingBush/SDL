@@ -443,7 +443,7 @@ public class Tag implements Serializable {
 
     /**
      *
-     * @param clazz
+     * @param clazz Class of type that should be returned
      * @param <T> type that should be returned
      * @return The value or null
      * @since 2.0.0
