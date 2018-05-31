@@ -8,6 +8,18 @@
 > 
 > <cite>sdlang.org</cite>
 
+### Adding the dependency to your project
+
+Releases are available from Maven Central
+
+```xml
+    <dependency>
+        <groupId>com.singingbush</groupId>
+        <artifactId>sdlang</artifactId>
+        <version>2.0.0</version>
+    </dependency>
+```
+
 ### Usage
 
 To parse an SDL file simply create an InputStreamReader and pass it into the constructor of Parser:
@@ -31,6 +43,6 @@ As the project appears to be abandoned I've forked it with the goal of
 - [x] Reporting on Test Coverage using [coveralls.io](coveralls.io)
 - [x] Fixing existing bugs
 - [x] Overhaul the project and start rewriting the codebase
-- [ ] Publish build artifacts to maven central
+- [x] Publish build artifacts to maven central
 
 Daniel Leuck, the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
