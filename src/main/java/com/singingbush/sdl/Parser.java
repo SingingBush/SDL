@@ -363,7 +363,7 @@ class Parser {
 					handleSlashComment();
 			} else if(c=='`') {
 				// handle multiline `` style strings
-				handleBackQuoteString();
+				handleLiteralString();
 			} else if(c=='[') {
 				// handle binary literals
 
@@ -615,7 +615,7 @@ class Parser {
 		}
 	}
 
-	private void handleBackQuoteString() throws SDLParseException, IOException {
+	private void handleLiteralString() throws SDLParseException, IOException {
 		int endIndex = line.indexOf("`", pos+1);
 
 		if(endIndex != -1) {

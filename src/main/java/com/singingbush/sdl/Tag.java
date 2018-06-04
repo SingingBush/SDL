@@ -128,9 +128,9 @@ import java.util.stream.Collectors;
  * <p>White space before the first character in the second line will be ignored.
  * </p>
  *
- * <p>2. Starting and ending with a backquote (`).  This type of string literal
- * can only be ended with a second backquote (`).  It is not necessary (or
- * possible) to escape any type of character within a backquote string literal.
+ * <p>2. Starting and ending with a back-tick (`).  This type of string literal
+ * can only be ended with a second back-tick (`).  It is not necessary (or
+ * possible) to escape any type of character within a back-tick string literal.
  * This type of literal can also span lines.  All white space is preserved
  * including new lines.
  * </p>
@@ -146,7 +146,7 @@ import java.util.stream.Collectors;
  * </pre>
  *
  * <p>Note: SDL interprets new lines in `` String literals as a single new line
- * character (\n) regarless of the platform.</p>
+ * character (\n) regardless of the platform.</p>
  *
  * <p>Binary literals use base64 characters enclosed in square brackets ([]).
  * The binary literal type can also span lines.  White space is ignored.
@@ -189,8 +189,7 @@ import java.util.stream.Collectors;
  *     in_japan 2005/12/05 14:12:23.345-JST
  * </pre>
  *
- * <p>SDL 1.0 has thirteen literal types (parenthesis indicate optional
- * components)</p>
+ * <p>SDL 1.0 has thirteen literal types (parenthesis indicate optional components)</p>
  * <pre>
  *     1. string (unicode) - examples: "hello" or `aloha`
  *     2. character (unicode) - example: '/'
@@ -215,7 +214,7 @@ import java.util.stream.Collectors;
  *                     00:00:01.023 (1 second, 23 milliseconds)
  *                     23d:05:21:23.532 (23 days, 5 hours, 21 minutes,
  *                         23 seconds, 532 milliseconds)
- *     12. binary [base64] exmaple - [sdf789GSfsb2+3324sf2]
+ *     12. binary [base64] example - [sdf789GSfsb2+3324sf2]
  *     13. null
  * </pre>
  *
@@ -231,7 +230,7 @@ import java.util.stream.Collectors;
  * <p>SDL supports four comment types.</p>
  *
  * <ol>
- * <li>// single line comments identicle to those used in Java, C, etc. // style
+ * <li>// single line comments identical to those used in Java, C, etc. // style
  * comments can occur anywhere in a line.  All text after // up to the new line
  * will be ignored.</li>
  * <li># property style comments.  They work the same way as //</li>
