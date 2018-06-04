@@ -11,3 +11,8 @@ jobs:
     - stage: Test Coverage
       jdk: oraclejdk8
       after_success: mvn clean test jacoco:report coveralls:report
+    - stage: Deploy
+      jdk: oraclejdk8
+      script: mvn clean deploy
+      on:
+        branch: master
