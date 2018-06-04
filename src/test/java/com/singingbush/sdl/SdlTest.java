@@ -77,10 +77,11 @@ public class SdlTest {
 
 		assertEquals("Tag should ignore the order in which attributes are added", t1, t2);
 
-		t2.setValue(new SdlValue<>("item", SdlType.STRING));
+        final SdlValue<String> item = new SdlValue<>("item", SdlType.STRING);
+        t2.setValue(item);
 		assertNotEquals("tags with different structures should return false from .equals()", t1, t2);
 
-		t2.removeValue("item");
+		t2.removeValue(item);
 		t2.setAttribute("another", new SdlValue<>("attribute", SdlType.STRING));
 		assertNotEquals("tags with different structures should return false from .equals()", t1, t2);
 

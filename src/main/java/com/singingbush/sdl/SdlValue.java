@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -72,7 +73,8 @@ class SdlValue<T> {
             case DURATION:
                 return timeSpanString(Duration.class.cast(value));
             case BINARY:
-                return "[" + Base64.getEncoder().encodeToString((byte[])value) + "]"; // todo: what about single byte
+                final String data = new String(Base64.getEncoder().encode((byte[])value), StandardCharsets.UTF_8);
+                return String.format("[%s]", data);
             case NULL:
                 return "null";
         }

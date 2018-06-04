@@ -16,6 +16,7 @@
  */
 package com.singingbush.sdl;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -24,6 +25,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 import java.util.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * The SDL parser.
@@ -34,8 +37,8 @@ class Parser {
 
     private static final String DATE_REGEX = "(\\d+\\/\\d+\\/\\d+)";
     private static final String TIME_REGEX = "(\\d+:\\d+(:\\d+)?(.\\d+)?)(-\\w+)?";
-    public static final String DATETIME_REGEX = DATE_REGEX + " " + TIME_REGEX;
-    public static final String TIMESPAN_REGEX = "-?(\\d+d:)?(\\d+:\\d+:\\d+)(.\\d+)?";
+    static final String DATETIME_REGEX = DATE_REGEX + " " + TIME_REGEX;
+    static final String TIMESPAN_REGEX = "-?(\\d+d:)?(\\d+:\\d+:\\d+)(.\\d+)?";
 
     private final BufferedReader reader;
 	private String line;
@@ -48,7 +51,7 @@ class Parser {
 	/**
 	 * Create an SDL parser
 	 */
-	Parser(Reader reader) {
+	Parser(@NotNull Reader reader) {
 		this.reader = (reader instanceof BufferedReader)
 			? ((BufferedReader)reader)
 			: new BufferedReader(reader);
@@ -59,8 +62,8 @@ class Parser {
 	 * @param sdlText a string of SDLang
 	 * @since 1.4.0
 	 */
-	Parser(final String sdlText) {
-		this(new StringReader(sdlText));
+	Parser(@NotNull final String sdlText) {
+		this(new StringReader(new String(sdlText.getBytes(), UTF_8)));
 		//this(new InputStreamReader(new ByteArrayInputStream(sdlText.getBytes())));
 	}
 
@@ -69,8 +72,8 @@ class Parser {
 	 * @param file A UTF-8 encoded .sdl file
 	 * @since 1.4.0
 	 */
-	Parser(final File file) throws FileNotFoundException, UnsupportedEncodingException {
-		this(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+	Parser(@NotNull final File file) throws FileNotFoundException {
+		this(new InputStreamReader(new FileInputStream(file), UTF_8));
 	}
 
 	/**

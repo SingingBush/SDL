@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -89,7 +91,8 @@ public class SDL {
 		} else if(object instanceof Long) {
 			return object.toString() + "L";
 		} else if(object instanceof byte[]) {
-			return "[" + Base64.getEncoder().encodeToString((byte[])object) + "]";
+            final String data = new String(Base64.getEncoder().encode((byte[])object), StandardCharsets.UTF_8);
+			return String.format("[%s]", data);
         } else if(LocalDate.class.isAssignableFrom(object.getClass())) {
             return DateTimeFormatter
                 .ofPattern(DATE_FORMAT)
