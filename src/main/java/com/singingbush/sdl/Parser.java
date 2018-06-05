@@ -33,7 +33,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Daniel Leuck
  */
-class Parser {
+public class Parser {
 
     private static final String DATE_REGEX = "(\\d+\\/\\d+\\/\\d+)";
     private static final String TIME_REGEX = "(\\d+:\\d+(:\\d+)?(.\\d+)?)(-\\w+)?";
