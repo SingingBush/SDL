@@ -51,7 +51,7 @@ public class Parser {
 	/**
 	 * Create an SDL parser
 	 */
-	Parser(@NotNull Reader reader) {
+	public Parser(@NotNull Reader reader) {
 		this.reader = (reader instanceof BufferedReader)
 			? ((BufferedReader)reader)
 			: new BufferedReader(reader);
@@ -62,7 +62,7 @@ public class Parser {
 	 * @param sdlText a string of SDLang
 	 * @since 1.4.0
 	 */
-	Parser(@NotNull final String sdlText) {
+	public Parser(@NotNull final String sdlText) {
 		this(new StringReader(new String(sdlText.getBytes(), UTF_8)));
 		//this(new InputStreamReader(new ByteArrayInputStream(sdlText.getBytes())));
 	}
@@ -72,7 +72,7 @@ public class Parser {
 	 * @param file A UTF-8 encoded .sdl file
 	 * @since 1.4.0
 	 */
-	Parser(@NotNull final File file) throws FileNotFoundException {
+	public Parser(@NotNull final File file) throws FileNotFoundException {
 		this(new InputStreamReader(new FileInputStream(file), UTF_8));
 	}
 
@@ -81,7 +81,7 @@ public class Parser {
 	 * @throws IOException If a problem is encountered with the reader
 	 * @throws SDLParseException If the document is malformed
 	 */
-	List<Tag> parse() throws IOException,SDLParseException {
+    public List<Tag> parse() throws IOException, SDLParseException {
 		final List<Tag> tags = new ArrayList<>();
 		List<Token> toks;
 
