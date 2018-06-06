@@ -17,7 +17,7 @@ Releases are available from Maven Central
     <dependency>
         <groupId>com.singingbush</groupId>
         <artifactId>sdlang</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
     </dependency>
 ```
 
