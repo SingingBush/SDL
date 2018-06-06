@@ -14,9 +14,9 @@ jobs:
     - stage: Deploy
       if: branch = develop
       jdk: oraclejdk8
-      before_script:
-        - openssl aes-256-cbc -K $KEY -iv $IV -S $SALT -in .travis/gpg.enc -out .travis/gpg.asc -d
-        - gpg2 --fast-import .travis/gpg.asc
+      before_install:
+        - openssl aes-256-cbc -K $encrypted_6678f8a25f19_key -iv $encrypted_6678f8a25f19_iv -in .travis/singingbushgpgkey.asc.enc -out .travis/singingbushgpgkey.asc -d
+        - gpg2 --fast-import .travis/singingbushgpgkey.asc
       script: mvn deploy -B --settings=.travis/settings.xml -DskipTests=true
       on:
         branch: develop
