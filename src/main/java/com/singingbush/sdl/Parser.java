@@ -50,6 +50,7 @@ public class Parser {
 
 	/**
 	 * Create an SDL parser
+     * @param reader A Reader for the SDL that should be parsed
 	 */
 	public Parser(@NotNull Reader reader) {
 		this.reader = (reader instanceof BufferedReader)
@@ -70,6 +71,7 @@ public class Parser {
 	/**
 	 * Convenience for users wanting to parse SDL from a java.io.File
 	 * @param file A UTF-8 encoded .sdl file
+     * @throws FileNotFoundException If file cannot be found
 	 * @since 1.4.0
 	 */
 	public Parser(@NotNull final File file) throws FileNotFoundException {

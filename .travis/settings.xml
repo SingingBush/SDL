@@ -25,6 +25,11 @@
 
     </profiles>
 
+    <activeProfiles>
+        <activeProfile>ossrh</activeProfile>
+        <activeProfile>release</activeProfile>
+    </activeProfiles>
+
     <localRepository/>
     <interactiveMode/>
     <usePluginRegistry/>

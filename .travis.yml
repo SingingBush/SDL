@@ -14,6 +14,9 @@ jobs:
     - stage: Deploy
       if: branch = develop
       jdk: oraclejdk8
+      before_script:
+        - openssl aes-256-cbc -K $GPG_PASSPHRASE -iv $GPG_PASSPHRASE -in .travis/gpg.enc -out .travis/gpg.asc -d
+        - gpg2 --fast-import .travis/gpg.asc
       script: mvn deploy -B --settings=.travis/settings.xml -DskipTests=true
       on:
         branch: develop
