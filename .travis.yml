@@ -12,8 +12,8 @@ jobs:
       jdk: oraclejdk8
       after_success: mvn clean test jacoco:report coveralls:report
     - stage: Deploy
-      if: branch = master
+      if: branch = develop
       jdk: oraclejdk8
       script: mvn deploy -B --settings=.travis/settings.xml -DskipTests=true
       on:
-        branch: master
+        branch: develop
