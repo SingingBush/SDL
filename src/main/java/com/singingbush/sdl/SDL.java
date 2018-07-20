@@ -35,6 +35,8 @@ import java.util.Base64;
  */
 public class SDL {
 
+    public static final SdlValue NULL = new SdlValue<>(null, SdlType.NULL);
+
 	/**
 	 * <p>The SDL standard date format "yyyy/MM/dd" or "y/M/d"</p>
 	 *
@@ -313,6 +315,117 @@ public class SDL {
 			}
 		}
 	}
+
+    /**
+     * @param value text to be converted to SDL
+     * @param literal in SDLang multiline strings are supported
+     * @return an SDL string
+     * @since 2.0.2
+     */
+    public static SdlValue<String> value(final String value, final boolean literal) {
+        return literal?
+            new SdlValue<>(Parser.parseMultilineString(String.format("`%s`", value)), SdlType.STRING_MULTILINE) :
+            new SdlValue<>(Parser.parseString(String.format("\"%s\"", value)), SdlType.STRING);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL char
+     * @since 2.0.2
+     */
+    public static SdlValue<Character> value(final char value) {
+        return new SdlValue<>(value, SdlType.CHARACTER);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL boolean
+     * @since 2.0.2
+     */
+    public static SdlValue<Boolean> value(final boolean value) {
+        return new SdlValue<>(value, SdlType.BOOLEAN);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL long
+     * @since 2.0.2
+     */
+    public static SdlValue<Long> value(final long value) {
+        return new SdlValue<>(value, SdlType.NUMBER);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL float
+     * @since 2.0.2
+     */
+    public static SdlValue<Float> value(final float value) {
+        return new SdlValue<>(value, SdlType.NUMBER);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL double
+     * @since 2.0.2
+     */
+    public static SdlValue<Double> value(final double value) {
+        return new SdlValue<>(value, SdlType.NUMBER);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL integer
+     * @since 2.0.2
+     */
+    public static SdlValue<Integer> value(final int value) {
+        return new SdlValue<>(value, SdlType.NUMBER);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL date
+     * @since 2.0.2
+     */
+    public static SdlValue<LocalDate> value(final LocalDate value) {
+        return new SdlValue<>(value, SdlType.DATE);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL datetime without timezone
+     * @since 2.0.2
+     */
+    public static SdlValue<LocalDateTime> value(final LocalDateTime value) {
+        return new SdlValue<>(value, SdlType.DATETIME);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL datetime with timezone
+     * @since 2.0.2
+     */
+    public static SdlValue<ZonedDateTime> value(final ZonedDateTime value) {
+        return new SdlValue<>(value, SdlType.DATETIME);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL timespan
+     * @since 2.0.2
+     */
+    public static SdlValue<Duration> value(final Duration value) {
+        return new SdlValue<>(value, SdlType.DURATION);
+    }
+
+    /**
+     * @param value text to be converted to SDL
+     * @return an SDL binary
+     * @since 2.0.2
+     */
+    public static SdlValue value(final byte[] value) {
+        return new SdlValue<>(value, SdlType.BINARY);
+    }
 
 	/**
 	 * Get the value represented by a string containing an SDL literal.
