@@ -13,7 +13,7 @@ import java.util.*;
  * @author Samael Bate (singingbush)
  * created on 17/05/18
  */
-class SdlValue<T> {
+public class SdlValue<T> {
 
     private final T value;
     private final SdlType type;

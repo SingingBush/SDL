@@ -317,6 +317,15 @@ public class SDL {
 	}
 
     /**
+     * @param name must be a legal SDL identifier (see {@link SDL#validateIdentifier(String)})
+     * @return a {@link TagBuilder} which can be used to easily create a {@link Tag}
+     * @since 2.0.2
+     */
+	public static TagBuilder tag(final String name) {
+	    return new TagBuilder(name);
+    }
+
+    /**
      * @param value text to be converted to SDL
      * @param literal in SDLang multiline strings are supported
      * @return an SDL string
