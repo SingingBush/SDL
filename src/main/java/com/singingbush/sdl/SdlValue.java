@@ -18,6 +18,12 @@ public class SdlValue<T> {
     private final T value;
     private final SdlType type;
 
+    /**
+     * Purposely package-private, this constructor is called internally
+     * by {@link SDL#value}
+     * @param value the Java type for this SDL value
+     * @param type the SdlType for this object
+     */
     SdlValue(final T value, final SdlType type) {
         this.value=value;
         this.type = type;

@@ -353,10 +353,13 @@ public class Tag implements Serializable {
 	/**
 	 * Creates an empty tag.
 	 *
+     * @deprecated As of release 2.0.2, use {@link SDL#tag(String)} instead.
+     * This constructor will be made package-private in a future release
 	 * @param name The name of this tag
 	 * @throws IllegalArgumentException if the name is not a legal SDL
 	 *     identifier.  See {@link SDL#validateIdentifier(String)}
 	 */
+	@Deprecated
 	public Tag(String name) {
 		this("", name);
 	}
@@ -365,12 +368,15 @@ public class Tag implements Serializable {
 	 * Creates an empty tag in the given namespace.  If the namespace is null
 	 * it will be coerced to an empty String.
 	 *
+     * @deprecated As of release 2.0.2, use {@link SDL#tag(String)} instead.
+     * This constructor will be made package-private in a future release
 	 * @param namespace The namespace for this tag
 	 * @param name The name of this tag
 	 * @throws IllegalArgumentException if the name is not a legal SDL
 	 *     identifier (see {@link SDL#validateIdentifier(String)}) or the
 	 *     namespace is non-blank and is not a legal SDL identifier.
 	 */
+	@Deprecated
 	public Tag(@NotNull final String namespace, @NotNull final String name) {
 		if(namespace != null && !namespace.isEmpty()) {
             SDL.validateIdentifier(namespace);
