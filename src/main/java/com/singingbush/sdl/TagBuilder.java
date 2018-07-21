@@ -17,6 +17,7 @@ public class TagBuilder {
 
     private final String name;
     private String namespace;
+    private String comment;
     private List<SdlValue> values = new ArrayList<>();
     private List<Tag> children = new ArrayList<>();
     private Map<String, SdlValue> attributes = new HashMap<>();
@@ -38,6 +39,17 @@ public class TagBuilder {
     @NotNull
     public TagBuilder withNamespace(@NotNull final String name) {
         this.namespace = name;
+        return this;
+    }
+
+    /**
+     *
+     * @param comment a single line of text that will precede the tag when serialised
+     * @return this TagBuilder
+     * @since 2.0.2
+     */
+    public TagBuilder withComment(@NotNull final String comment) {
+        this.comment = comment;
         return this;
     }
 
@@ -147,6 +159,7 @@ public class TagBuilder {
     @NotNull
     public Tag build() {
         final Tag t = namespace != null? new Tag(namespace, name) : new Tag(name);
+        t.setComment(comment);
         values.forEach(t::addValue);
         children.forEach(t::addChild);
         t.setAttributes(attributes); // attributes.forEach(t::setAttribute);

@@ -341,6 +341,7 @@ public class Tag implements Serializable {
 	private final String namespace;
 	private final String name;
 
+    private String comment;
 	private List<SdlValue> values = new ArrayList();
 	private List<SdlValue> valuesView = Collections.unmodifiableList(values);
 	private Map<String,String> attributeToNamespace = new HashMap<>();
@@ -852,7 +853,15 @@ public class Tag implements Serializable {
 		return namespace;
 	}
 
-	/**
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(final String comment) {
+        this.comment = comment;
+    }
+
+    /**
 	 * Add all the tags specified in the file at the given URL to this Tag.
 	 *
 	 * @param url A UTF8 encoded .sdl file
@@ -980,6 +989,13 @@ public class Tag implements Serializable {
 			linePrefix="";
 
 		final StringBuilder builder = new StringBuilder(linePrefix);
+
+		if(comment != null && !comment.isEmpty()) {
+            final String[] lines = comment.split("\n");
+            for (final String line : lines) {
+                builder.append("// ").append(line).append(newLine).append(linePrefix);
+            }
+        }
 
 		boolean skipValueSpace=false;
 		if("content".equals(name) && "".equals(namespace)) {
