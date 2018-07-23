@@ -354,7 +354,7 @@ public class Tag implements Serializable {
 	/**
 	 * Creates an empty tag.
 	 *
-     * @deprecated As of release 2.0.2, use {@link SDL#tag(String)} instead.
+     * @deprecated As of release 2.1.0, use {@link SDL#tag(String)} instead.
      * This constructor will be made package-private in a future release
 	 * @param name The name of this tag
 	 * @throws IllegalArgumentException if the name is not a legal SDL
@@ -369,7 +369,7 @@ public class Tag implements Serializable {
 	 * Creates an empty tag in the given namespace.  If the namespace is null
 	 * it will be coerced to an empty String.
 	 *
-     * @deprecated As of release 2.0.2, use {@link SDL#tag(String)} instead.
+     * @deprecated As of release 2.1.0, use {@link SDL#tag(String)} instead.
      * This constructor will be made package-private in a future release
 	 * @param namespace The namespace for this tag
 	 * @param name The name of this tag

@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Samael Bate (singingbush)
  * created on 20/07/18
- * @since 2.0.2
+ * @since 2.1.0
  */
 public class TagBuilder {
 
@@ -24,7 +24,7 @@ public class TagBuilder {
 
     /**
      * @param name must be a legal SDL identifier (see {@link SDL#validateIdentifier(String)})
-     * @since 2.0.2
+     * @since 2.1.0
      */
     TagBuilder(@NotNull final String name) {
         this.name = name;
@@ -34,7 +34,7 @@ public class TagBuilder {
      * In SDL you can optionally specify a namespace
      * @param name must be a legal SDL identifier (see {@link SDL#validateIdentifier(String)})
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withNamespace(@NotNull final String name) {
@@ -46,7 +46,7 @@ public class TagBuilder {
      *
      * @param comment a single line of text that will precede the tag when serialised
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public TagBuilder withComment(@NotNull final String comment) {
         this.comment = comment;
@@ -57,7 +57,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more values
      * @param value an SDL object, see {@link SdlValue}
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withValue(@NotNull final SdlValue value) {
@@ -69,7 +69,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more values
      * @param values multiple SDL objects, see {@link SdlValue}
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withValues(@NotNull final SdlValue... values) {
@@ -81,7 +81,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more values
      * @param values multiple SDL objects, see {@link SdlValue}
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withValues(@NotNull final List<SdlValue> values) {
@@ -93,7 +93,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more children
      * @param child a child {@link Tag} object
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withChild(@NotNull final Tag child) {
@@ -105,7 +105,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more children
      * @param children multiple child {@link Tag} objects
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withChildren(@NotNull final Tag... children) {
@@ -117,7 +117,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more children
      * @param children multiple child {@link Tag} objects
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withChildren(@NotNull final List<Tag> children) {
@@ -130,7 +130,7 @@ public class TagBuilder {
      * @param key attribute key
      * @param value attribute value
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withAttribute(@NotNull final String key, @NotNull final SdlValue value) {
@@ -142,7 +142,7 @@ public class TagBuilder {
      * In SDL you can optionally have one or more attributes
      * @param attributes multiple attributes
      * @return this TagBuilder
-     * @since 2.0.2
+     * @since 2.1.0
      */
     @NotNull
     public TagBuilder withAttributes(@NotNull final Map<String, SdlValue> attributes) {

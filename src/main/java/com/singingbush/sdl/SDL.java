@@ -319,7 +319,7 @@ public class SDL {
     /**
      * @param name must be a legal SDL identifier (see {@link SDL#validateIdentifier(String)})
      * @return a {@link TagBuilder} which can be used to easily create a {@link Tag}
-     * @since 2.0.2
+     * @since 2.1.0
      */
 	public static TagBuilder tag(final String name) {
 	    return new TagBuilder(name);
@@ -329,7 +329,7 @@ public class SDL {
      * @param value text to be converted to SDL
      * @param literal in SDLang multiline strings are supported
      * @return an SDL string
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<String> value(final String value, final boolean literal) {
         return literal?
@@ -340,7 +340,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL char
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Character> value(final char value) {
         return new SdlValue<>(value, SdlType.CHARACTER);
@@ -349,7 +349,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL boolean
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Boolean> value(final boolean value) {
         return new SdlValue<>(value, SdlType.BOOLEAN);
@@ -358,7 +358,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL long
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Long> value(final long value) {
         return new SdlValue<>(value, SdlType.NUMBER);
@@ -367,7 +367,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL float
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Float> value(final float value) {
         return new SdlValue<>(value, SdlType.NUMBER);
@@ -376,7 +376,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL double
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Double> value(final double value) {
         return new SdlValue<>(value, SdlType.NUMBER);
@@ -385,7 +385,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL integer
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Integer> value(final int value) {
         return new SdlValue<>(value, SdlType.NUMBER);
@@ -394,7 +394,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL date
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<LocalDate> value(final LocalDate value) {
         return new SdlValue<>(value, SdlType.DATE);
@@ -403,7 +403,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL datetime without timezone
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<LocalDateTime> value(final LocalDateTime value) {
         return new SdlValue<>(value, SdlType.DATETIME);
@@ -412,7 +412,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL datetime with timezone
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<ZonedDateTime> value(final ZonedDateTime value) {
         return new SdlValue<>(value, SdlType.DATETIME);
@@ -421,7 +421,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL timespan
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue<Duration> value(final Duration value) {
         return new SdlValue<>(value, SdlType.DURATION);
@@ -430,7 +430,7 @@ public class SDL {
     /**
      * @param value text to be converted to SDL
      * @return an SDL binary
-     * @since 2.0.2
+     * @since 2.1.0
      */
     public static SdlValue value(final byte[] value) {
         return new SdlValue<>(value, SdlType.BINARY);

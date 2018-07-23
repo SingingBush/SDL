@@ -18,7 +18,7 @@ Releases are available from Maven Central
     <dependency>
         <groupId>com.singingbush</groupId>
         <artifactId>sdlang</artifactId>
-        <version>2.0.1</version>
+        <version>2.1.0</version>
     </dependency>
 ```
 
@@ -26,10 +26,27 @@ Releases are available from Maven Central
 
 To parse an SDL file simply create an InputStreamReader and pass it into the constructor of Parser:
 
-```Java
+```java
 final InputStream inputStream = new FileInputStream("c:\\data\\myfile.sdl");
 final Reader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
 final List<Tag> tags = new Parser(inputStreamReader).parse();
+```
+
+To write SDL from Java objects:
+
+```java
+final Tag tag = SDL.tag("thing")
+    .withNamespace("my")
+    .withComment("This text will precede the 'my:thing' when serialised")
+    .withValue(SDL.value('g'))
+    .withChild(SDL.tag("child")
+        .withComment("child tags can also have comments")
+        .withValues(SDL.value(ZonedDateTime.now()), SDL.value("some text"))
+        .build()
+    )
+    .withAttribute("flt", SDL.value(0.0f))
+    .withAttribute("lng", SDL.value(1_000L))
+    .build();
 ```
 
 ### Forked from [ikayzo/SDL](https://github.com/ikayzo/SDL):
