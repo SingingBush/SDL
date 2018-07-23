@@ -618,6 +618,17 @@ public class SdlTest {
             list(list(1,2,3),list(4,5,6)));
     }
 
+    @Test
+    public void testMatrix4() throws IOException, SDLParseException {
+        final InputStreamReader inputStream = loadTestResource("test_structures.sdl");
+        final Tag root = new Tag("root").read(inputStream);
+
+        final Tag t = root.getChild("matrix4");
+
+        assertEquals("matrix should be a list of lists", t.getChildrenValues("content"),
+            list(list(1,2,3),list(4,5,6)));
+    }
+
 	@Test
     public void testSemicolonsWithTwoLines() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("test_structures.sdl");

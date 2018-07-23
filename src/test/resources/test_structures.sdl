@@ -135,6 +135,9 @@ matrix3 {
 	1	2	3; 4	5	6
 }
 
+// correct way to do single line matrix in SDL (as per https://github.com/Abscissa/SDLang-D/issues/59)
+matrix4 {; 1 2 3; 4 5 6; }
+
 # Test semicolons
 
 twoLines {
