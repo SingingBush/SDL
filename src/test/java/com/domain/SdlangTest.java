@@ -1,13 +1,14 @@
 package com.domain;
 
-import com.singingbush.sdl.Parser;
-import com.singingbush.sdl.SDLParseException;
-import com.singingbush.sdl.Tag;
+import com.singingbush.sdl.*;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -49,5 +50,41 @@ public class SdlangTest {
 
         assertEquals(3, tag.getChildren().get(0).getValues().size());
         assertEquals(3, tag.getChildren().get(1).getValues().size());
+    }
+
+    @Test
+    public void testWritingSdl() {
+        final LocalDateTime dateTime = LocalDateTime.now();
+
+        final Tag child = new Tag("child");
+        child.addValue(SDL.value(dateTime));
+        child.addValue(SDL.value(541L));
+
+        final Tag t = new Tag("my", "thing");
+        t.addValue(SDL.value('g'));
+        t.addChild(child);
+        t.setAttribute("flt", SDL.value(0.0f));
+        t.setAttribute("lng", SDL.value(1_000L));
+
+        // Create a Tag the new way
+        Tag tag = SDL.tag("thing")
+            .withNamespace("my")
+            .withComment("some comment that is only available\nwhen serialised using pretty print")
+            .withValue(SDL.value('g'))
+            .withChild(SDL.tag("child")
+                .withComment("some line comment")
+                .withValues(SDL.value(dateTime), SDL.value(541L))
+                .build()
+            )
+            .withAttribute("flt", SDL.value(0.0f))
+            .withAttribute("lng", SDL.value(1_000L))
+            .build();
+
+        assertEquals("content should be same regardless of the new style allowing comments", t, tag);
+
+        assertEquals(1, tag.getValues().size());
+        assertEquals(Character.class, tag.getValues().get(0).getClass());
+        assertEquals(1, tag.getChildren().size());
+        assertEquals(2, tag.getAttributes().size());
     }
 }
