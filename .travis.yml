@@ -8,6 +8,7 @@ jobs:
       jdk: oraclejdk8
     - jdk: oraclejdk9
     - jdk: oraclejdk10
+    - jdk: oraclejdk11
     - stage: Test Coverage
       jdk: oraclejdk8
       after_success: mvn clean test jacoco:report coveralls:report
