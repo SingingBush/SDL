@@ -292,7 +292,7 @@ public class SDL {
 	 * @param identifier The identifier to validate
 	 * @throws IllegalArgumentException if the identifier is not legal
 	 */
-	public static void validateIdentifier(String identifier) {
+	public static void validateIdentifier(@NotNull final String identifier) {
 		if(identifier==null || identifier.length()==0) {
             throw new IllegalArgumentException("SDL identifiers cannot be null or empty.");
         }
@@ -317,11 +317,20 @@ public class SDL {
 	}
 
     /**
+     * Constructs a new tag using the default name "content"
+     * @return a {@link TagBuilder} which can be used to easily create a {@link Tag}
+     * @since 2.1.1
+     */
+	public static TagBuilder tag() {
+	    return tag("content");
+    }
+
+    /**
      * @param name must be a legal SDL identifier (see {@link SDL#validateIdentifier(String)})
      * @return a {@link TagBuilder} which can be used to easily create a {@link Tag}
      * @since 2.1.0
      */
-	public static TagBuilder tag(final String name) {
+	public static TagBuilder tag(@NotNull final String name) {
 	    return new TagBuilder(name);
     }
 
@@ -331,7 +340,7 @@ public class SDL {
      * @return an SDL string
      * @since 2.1.0
      */
-    public static SdlValue<String> value(final String value, final boolean literal) {
+    public static SdlValue<String> value(@NotNull final String value, final boolean literal) {
         return literal?
             new SdlValue<>(Parser.parseMultilineString(String.format("`%s`", value)), SdlType.STRING_MULTILINE) :
             new SdlValue<>(Parser.parseString(String.format("\"%s\"", value)), SdlType.STRING);
@@ -396,7 +405,7 @@ public class SDL {
      * @return an SDL date
      * @since 2.1.0
      */
-    public static SdlValue<LocalDate> value(final LocalDate value) {
+    public static SdlValue<LocalDate> value(@NotNull final LocalDate value) {
         return new SdlValue<>(value, SdlType.DATE);
     }
 
@@ -405,7 +414,7 @@ public class SDL {
      * @return an SDL datetime without timezone
      * @since 2.1.0
      */
-    public static SdlValue<LocalDateTime> value(final LocalDateTime value) {
+    public static SdlValue<LocalDateTime> value(@NotNull final LocalDateTime value) {
         return new SdlValue<>(value, SdlType.DATETIME);
     }
 
@@ -414,7 +423,7 @@ public class SDL {
      * @return an SDL datetime with timezone
      * @since 2.1.0
      */
-    public static SdlValue<ZonedDateTime> value(final ZonedDateTime value) {
+    public static SdlValue<ZonedDateTime> value(@NotNull final ZonedDateTime value) {
         return new SdlValue<>(value, SdlType.DATETIME);
     }
 
@@ -423,7 +432,7 @@ public class SDL {
      * @return an SDL timespan
      * @since 2.1.0
      */
-    public static SdlValue<Duration> value(final Duration value) {
+    public static SdlValue<Duration> value(@NotNull final Duration value) {
         return new SdlValue<>(value, SdlType.DURATION);
     }
 
@@ -506,7 +515,7 @@ public class SDL {
 	 * @throws IllegalArgumentException If the string is null or contains
 	 *     literals that cannot be parsed
 	 */
-	public static List list(String valueList) {
+	public static List list(@NotNull final String valueList) {
 		if(valueList==null) {
             throw new IllegalArgumentException("valueList argument to SDL.list(String) cannot be null");
         }
@@ -546,7 +555,7 @@ public class SDL {
 	 * @throws IllegalArgumentException If the string is null or contains
 	 *     literals that cannot be parsed or the map is malformed
 	 */
-	public static SortedMap<String,SdlValue> map(final String attributeString) {
+	public static SortedMap<String,SdlValue> map(@NotNull final String attributeString) {
 		if(attributeString==null) {
             throw new IllegalArgumentException("attributeString argument to SDL.map(String) cannot be null");
         }

@@ -18,6 +18,7 @@ package com.singingbush.sdl;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.*;
 
@@ -746,7 +747,7 @@ public class SdlTest {
         final InputStream testData = this.getClass()
                 .getClassLoader()
                 .getResourceAsStream(testResourceFile);
-        return new InputStreamReader(testData, "UTF8");
+        return new InputStreamReader(testData, StandardCharsets.UTF_8);
     }
 
 	////////////////////////////////////////////////////////////////////////////

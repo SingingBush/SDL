@@ -50,13 +50,24 @@ public class SdlangTest {
 
         assertEquals(3, tag.getChildren().get(0).getValues().size());
         assertEquals(3, tag.getChildren().get(1).getValues().size());
+
+        final Tag sameContent = SDL.tag("matrix")
+            .withChildren(
+                SDL.tag().withValues(SDL.value(8), SDL.value(64), SDL.value(87)).build(),
+                SDL.tag().withValues(SDL.value(31), SDL.value(34), SDL.value(18)).build()
+            )
+            .build();
+
+        assertEquals(sameContent, tag);
+
+        assertEquals(tags, new Parser(sameContent.toString()).parse());
     }
 
     @Test
     public void testWritingSdl() {
         final LocalDateTime dateTime = LocalDateTime.now();
 
-        final Tag child = new Tag("child");
+        final Tag child = new Tag("child"); // use SDL.tag() when constructor removed
         child.addValue(SDL.value(dateTime));
         child.addValue(SDL.value(541L));
 
