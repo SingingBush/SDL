@@ -1,18 +1,25 @@
 language: java
 
-dist: bionic
+# For some reason Oracle JDK didn't install correctly on xenial or bionic
+dist: trusty
 
 jdk:
   - oraclejdk8
   - oraclejdk9
-  - openjdk8
-  - openjdk10
-  - openjdk11
-  - openjdk12
-  - openjdk13
 
 jobs:
   include:
+    # Use Ubuntu Bionic for the more recent Java versions (OpenJDK)
+    - stage: Test
+      jdk: openjdk10
+      dist: bionic
+    - jdk: openjdk11
+      dist: bionic
+    - jdk: openjdk12
+      dist: bionic
+    - jdk: openjdk13
+      dist: bionic
+
     - stage: Test Coverage
       jdk: oraclejdk8
       after_success: mvn clean test jacoco:report coveralls:report
@@ -25,5 +32,5 @@ jobs:
       script: mvn deploy -B --settings=.travis/settings.xml -DskipTests=true
       on:
         tags: true
-  allow_failures:
-    - jdk: openjdk13
+  # allow_failures:
+  #   - jdk: openjdk13
