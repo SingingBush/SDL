@@ -5,8 +5,11 @@ dist: bionic
 jdk:
   - oraclejdk8
   - oraclejdk9
+  - openjdk8
   - openjdk10
   - openjdk11
+  - openjdk12
+  - openjdk13
 
 jobs:
   include:
@@ -22,3 +25,5 @@ jobs:
       script: mvn deploy -B --settings=.travis/settings.xml -DskipTests=true
       on:
         tags: true
+  allow_failures:
+    - jdk: openjdk13
