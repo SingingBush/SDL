@@ -4,12 +4,12 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: Test on node ${{ matrix.jdk }} and ${{ matrix.os }}
+    name: Test with Java ${{ matrix.jdk }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        jdk: ['1.8', '11']
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        jdk: ['1.8', '9', '10', '11', '12', '13']
+        #os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
     - uses: actions/checkout@v1
