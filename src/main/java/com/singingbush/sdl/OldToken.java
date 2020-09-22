@@ -9,7 +9,7 @@ import java.util.Objects;
  *
  * @author Daniel Leuck
  */
-class Token {
+class OldToken {
 
     private static final String DATE_REGEX = "(\\d+\\/\\d+\\/\\d+)";
     private static final String TIME_REGEX = "(\\d+:\\d+(:\\d+)?(.\\d+)?)(-\\w+)?";
@@ -27,7 +27,7 @@ class Token {
     private final boolean punctuation;
     private final boolean literal;
 
-    Token(String text, int line, int position) throws SDLParseException {
+    OldToken(String text, int line, int position) throws SDLParseException {
         this.text=text;
 
         this.line=line;
@@ -37,10 +37,10 @@ class Token {
         try {
             if(text.startsWith("\"")) {
                 type = SdlType.STRING;
-                sdlValue = new SdlValue<>(Parser.parseString(text), SdlType.STRING);
+                sdlValue = new SdlValue<>(OldParser.parseString(text), SdlType.STRING);
             } else if(text.startsWith("`")) {
                 type = SdlType.STRING_MULTILINE;
-                sdlValue = new SdlValue<>(Parser.parseMultilineString(text), SdlType.STRING_MULTILINE);
+                sdlValue = new SdlValue<>(OldParser.parseMultilineString(text), SdlType.STRING_MULTILINE);
             } else if(text.startsWith("'")) {
                 type = SdlType.CHARACTER;
                 sdlValue = new SdlValue<>(text.charAt(1), SdlType.CHARACTER);
@@ -55,20 +55,20 @@ class Token {
                 sdlValue = new SdlValue<>(false, SdlType.BOOLEAN);
             } else if(text.startsWith("[")) {
                 type = SdlType.BINARY;
-                sdlValue = new SdlValue<>(Parser.parseBinary(text), SdlType.BINARY);
+                sdlValue = new SdlValue<>(OldParser.parseBinary(text), SdlType.BINARY);
             } else if(text.matches(DATE_REGEX)) {
                 type = SdlType.DATE;
-                sdlValue = new SdlValue<>(Parser.parseDate(text), SdlType.DATE);
+                sdlValue = new SdlValue<>(OldParser.parseDate(text), SdlType.DATE);
             } else if(text.matches(DATETIME_REGEX)) {
                 type = SdlType.DATETIME;
-                final Object dt = text.contains("-") ? Parser.parseZonedDateTime(text) : Parser.parseLocalDateTime(text);
+                final Object dt = text.contains("-") ? OldParser.parseZonedDateTime(text) : OldParser.parseLocalDateTime(text);
                 sdlValue = new SdlValue<>(dt, SdlType.DATETIME);
             } else if(text.matches(TIMESPAN_REGEX)) {
                 type = SdlType.DURATION;
-                sdlValue = new SdlValue<>(Parser.parseTimeSpan(text), SdlType.DURATION);
+                sdlValue = new SdlValue<>(OldParser.parseTimeSpan(text), SdlType.DURATION);
             } else if("01234567890-.".indexOf(text.charAt(0))!=-1) {
                 type = SdlType.NUMBER;
-                sdlValue = new SdlValue<>(Parser.parseNumber(text), SdlType.NUMBER);
+                sdlValue = new SdlValue<>(OldParser.parseNumber(text), SdlType.NUMBER);
             } else {
                 char c = text.charAt(0);
                 switch(c) {
@@ -162,7 +162,7 @@ class Token {
     public boolean equals(final Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        Token token = (Token) obj;
+        OldToken token = (OldToken) obj;
         return line == token.line &&
             position == token.position &&
             size == token.size &&

@@ -6,9 +6,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -25,7 +23,7 @@ public class SdlangTest {
     public void testParserConstructorWithReader() throws IOException, SDLParseException {
         final Reader reader = new StringReader("employee \"Mr Smith\" email=\"smith@domain.org\" active=true // comments");
 
-        final List<Tag> tags = new Parser(reader).parse();
+        final List<Tag> tags = new OldParser(reader).parse();
 
         assertEquals(1, tags.size());
         final Tag tag = tags.get(0);
@@ -39,9 +37,9 @@ public class SdlangTest {
 
     @Test
     public void testParserConstructorWithString() throws IOException, SDLParseException {
-        assertTrue(new Parser("").parse().isEmpty());
+        assertTrue(new OldParser("").parse().isEmpty());
 
-        final List<Tag> tags = new Parser("matrix {\n 8 64 87; 31 34 18 \n}").parse();
+        final List<Tag> tags = new OldParser("matrix {\n 8 64 87; 31 34 18 \n}").parse();
 
         assertEquals(1, tags.size());
         final Tag tag = tags.get(0);
@@ -60,7 +58,7 @@ public class SdlangTest {
 
         assertEquals(sameContent, tag);
 
-        assertEquals(tags, new Parser(sameContent.toString()).parse());
+        assertEquals(tags, new OldParser(sameContent.toString()).parse());
     }
 
     @Test

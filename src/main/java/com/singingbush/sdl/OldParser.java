@@ -33,7 +33,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Daniel Leuck
  */
-public class Parser {
+public class OldParser {
 
     private static final String DATE_REGEX = "(\\d+\\/\\d+\\/\\d+)";
     private static final String TIME_REGEX = "(\\d+:\\d+(:\\d+)?(.\\d+)?)(-\\w+)?";
@@ -42,7 +42,7 @@ public class Parser {
 
     private final BufferedReader reader;
 	private String line;
-	private List<Token> toks;
+	private List<OldToken> toks;
 	private StringBuilder sb;
 	private boolean startEscapedQuoteLine;
 	private int lineNumber=-1, lineStart = 0, pos=0, lineLength=0, tokenStart=0;
@@ -52,7 +52,7 @@ public class Parser {
 	 * Create an SDL parser
      * @param reader A Reader for the SDL that should be parsed
 	 */
-	public Parser(@NotNull Reader reader) {
+	public OldParser(@NotNull Reader reader) {
 		this.reader = (reader instanceof BufferedReader)
 			? ((BufferedReader)reader)
 			: new BufferedReader(reader);
@@ -63,7 +63,7 @@ public class Parser {
 	 * @param sdlText a string of SDLang
 	 * @since 1.4.0
 	 */
-	public Parser(@NotNull final String sdlText) {
+	public OldParser(@NotNull final String sdlText) {
 		this(new StringReader(new String(sdlText.getBytes(), UTF_8)));
 		//this(new InputStreamReader(new ByteArrayInputStream(sdlText.getBytes())));
 	}
@@ -74,7 +74,7 @@ public class Parser {
      * @throws FileNotFoundException If file cannot be found
 	 * @since 1.4.0
 	 */
-	public Parser(@NotNull final File file) throws FileNotFoundException {
+	public OldParser(@NotNull final File file) throws FileNotFoundException {
 		this(new InputStreamReader(new FileInputStream(file), UTF_8));
 	}
 
@@ -85,7 +85,7 @@ public class Parser {
 	 */
     public List<Tag> parse() throws IOException, SDLParseException {
 		final List<Tag> tags = new ArrayList<>();
-		List<Token> toks;
+		List<OldToken> toks;
 
 		while((toks=getLineTokens()) != null) {
 			int size = toks.size();
@@ -97,8 +97,8 @@ public class Parser {
 			} else if(toks.get(0).getType()==SdlType.END_BLOCK){
 				parseException("No opening block ({) for close block (}).", toks.get(0).getLine(), toks.get(0).getPosition());
 			} else {
-				List<Token> tokens = new ArrayList<>(size);
-				for (final Token t : toks) {
+				List<OldToken> tokens = new ArrayList<>(size);
+				for (final OldToken t : toks) {
 					tokens.add(t);
 					if(SdlType.SEMICOLON.equals(t.getType())) {
 						tags.add(constructTag(tokens));
@@ -117,7 +117,7 @@ public class Parser {
 	}
 
 	private void addChildren(Tag parent) throws SDLParseException, IOException {
-		List<Token> toks;
+		List<OldToken> toks;
 		while((toks=getLineTokens())!=null) {
 			int size = toks.size();
 
@@ -142,7 +142,7 @@ public class Parser {
 	 *
 	 * @throws SDLParseException
 	 */
-	Tag constructTag(List<Token> toks) throws SDLParseException {
+	Tag constructTag(List<OldToken> toks) throws SDLParseException {
 	    if(lineNumber ==141) {
 	        int sdf=23;
         }
@@ -151,11 +151,11 @@ public class Parser {
 			// the parseException method adds 1 to line and position
 			parseException("Internal Error: Empty token list", lineNumber, -2);
 
-		Token t0 = toks.get(0);
+		OldToken t0 = toks.get(0);
 
 
 		if(t0.isLiteral()) {
-			toks.add(0, t0 = new Token("content", -1, -1));
+			toks.add(0, t0 = new OldToken("content", -1, -1));
 		} else if(!SdlType.IDENTIFIER.equals(t0.getType())) {
 			expectingButGot("IDENTIFIER", "" + t0.getType() + " (" + t0.getText() + ")",
 					t0.getLine(), t0.getPosition());
@@ -170,14 +170,14 @@ public class Parser {
 		} else {
 			int valuesStartIndex = 1;
 
-			final Token t1 = toks.get(1);
+			final OldToken t1 = toks.get(1);
 
 			if(SdlType.COLON.equals(t1.getType())) {
 				if(size==2 || !SdlType.IDENTIFIER.equals(toks.get(2).getType())) {
                     parseException("Colon (:) encountered in unexpected location.", t1.getLine(), t1.getPosition());
                 }
 
-				Token t2 = toks.get(2);
+				OldToken t2 = toks.get(2);
 				tag = new Tag(t0.getText(), t2.getText());
 
 				valuesStartIndex = 3;
@@ -200,12 +200,12 @@ public class Parser {
 	/**
 	 * @return The position at the end of the value list
 	 */
-	private int addTagValues(Tag tag, List<Token> toks, int tpos) throws SDLParseException {
+	private int addTagValues(Tag tag, List<OldToken> toks, int tpos) throws SDLParseException {
 
 		int size=toks.size(), i=tpos;
 
 		for(; i < size; i++) {
-			Token t = toks.get(i);
+			OldToken t = toks.get(i);
 			if(t.isLiteral()) {
 
 //			    if(SdlType.DATETIME.equals(t.getType())) { // don't think I need this
@@ -239,13 +239,13 @@ public class Parser {
 	/**
 	 * Add attributes to the given tag
 	 */
-	private void addTagAttributes(final Tag tag, final List<Token> toks, final int tpos) throws SDLParseException {
+	private void addTagAttributes(final Tag tag, final List<OldToken> toks, final int tpos) throws SDLParseException {
 
 		int i = tpos;
         final int size = toks.size();
 
         while(i<size) {
-			Token t = toks.get(i);
+			OldToken t = toks.get(i);
 			if(t.getType()!=SdlType.IDENTIFIER) {
                 expectingButGot("IDENTIFIER", t.getType(), t.getLine(), t.getPosition());
             }
@@ -322,7 +322,7 @@ public class Parser {
 	 * @throws IOException If there is an IO problem reading the source
 	 */
 	@Nullable
-	List<Token> getLineTokens() throws SDLParseException, IOException {
+	List<OldToken> getLineTokens() throws SDLParseException, IOException {
 //		line = readLine();
         if(semicolonTerminated) {
             semicolonTerminated = false;
@@ -351,7 +351,7 @@ public class Parser {
 				handleCharacterLiteral();
 			} else if("{}=:".indexOf(c)!=-1) {
 				// handle punctuation
-				toks.add(new Token(""+c, lineNumber, pos));
+				toks.add(new OldToken(""+c, lineNumber, pos));
 				sb=null;
 			} else if(c=='#') {
 				// handle hash comments
@@ -427,7 +427,7 @@ public class Parser {
 
 	private void completeToken() throws SDLParseException {
 		if(sb != null) {
-			toks.add(new Token(sb.toString(), lineNumber, tokenStart));
+			toks.add(new OldToken(sb.toString(), lineNumber, tokenStart));
 			sb = null;
 		}
 	}
@@ -482,7 +482,7 @@ public class Parser {
 			} else {
 				sb.append(c);
 				if(c=='"') {
-					toks.add(new Token(sb.toString(), lineNumber, tokenStart));
+					toks.add(new OldToken(sb.toString(), lineNumber, tokenStart));
 					sb=null;
 					return;
 				}
@@ -555,15 +555,15 @@ public class Parser {
             }
 
 			if(c3=='\\') {
-				toks.add(new Token("'\\'", lineNumber, pos));
+				toks.add(new OldToken("'\\'", lineNumber, pos));
 			} else if(c3=='\'') {
-				toks.add(new Token("'''", lineNumber, pos));
+				toks.add(new OldToken("'''", lineNumber, pos));
 			} else if(c3=='n') {
-				toks.add(new Token("'\n'", lineNumber, pos));
+				toks.add(new OldToken("'\n'", lineNumber, pos));
 			} else if(c3=='r') {
-				toks.add(new Token("'\r'", lineNumber, pos));
+				toks.add(new OldToken("'\r'", lineNumber, pos));
 			}  else if(c3=='t') {
-				toks.add(new Token("'\t'", lineNumber, pos));
+				toks.add(new OldToken("'\t'", lineNumber, pos));
 			} else {
 				parseException("Illegal escape character " + line.charAt(pos), lineNumber, pos);
 			}
@@ -573,7 +573,7 @@ public class Parser {
                 expectingButGot("single quote (')", "\"" + line.charAt(pos) + "\"", lineNumber, pos);
             }
 		} else {
-			toks.add(new Token("'" +  c2 + "'", lineNumber, pos));
+			toks.add(new OldToken("'" +  c2 + "'", lineNumber, pos));
 			if(pos==lineLength-1) {
                 parseException("Got '" + c2 + " at end of " +  "line", lineNumber, pos);
             }
@@ -622,7 +622,7 @@ public class Parser {
 
 		if(endIndex != -1) {
 			// handle end quote on same line
-			toks.add(new Token(line.substring(pos, endIndex+1), lineNumber, pos));
+			toks.add(new OldToken(line.substring(pos, endIndex+1), lineNumber, pos));
 			sb = null;
 
 			pos = endIndex;
@@ -651,7 +651,7 @@ public class Parser {
 				}
 			}
 
-			toks.add(new Token(sb.toString(), lineNumber, start));
+			toks.add(new OldToken(sb.toString(), lineNumber, start));
 			sb=null;
 		}
 	}
@@ -661,7 +661,7 @@ public class Parser {
 
 		if(endIndex != -1) {
 			// handle end quote on same line
-			toks.add(new Token(line.substring(pos, endIndex+1), lineNumber, pos));
+			toks.add(new OldToken(line.substring(pos, endIndex+1), lineNumber, pos));
 			sb = null;
 
 			pos=endIndex;
@@ -689,7 +689,7 @@ public class Parser {
 				}
 			}
 
-			toks.add(new Token(sb.toString(), lineNumber, start));
+			toks.add(new OldToken(sb.toString(), lineNumber, start));
 			sb=null;
 		}
 	}
@@ -731,7 +731,7 @@ public class Parser {
 			}
 		}
 
-		toks.add(new Token(sb.toString(), lineNumber, tokenStart));
+		toks.add(new OldToken(sb.toString(), lineNumber, tokenStart));
 		sb=null;
 	}
 
@@ -751,7 +751,7 @@ public class Parser {
 			}
 		}
 
-		toks.add(new Token(sb.toString(), lineNumber, tokenStart));
+		toks.add(new OldToken(sb.toString(), lineNumber, tokenStart));
 		sb=null;
 	}
 

@@ -1,0 +1,43 @@
+
+fee {
+    fun:fi {
+        fo 5.5 # 1957/12/15
+    }
+}
+
+another 12 "hi" true false nil 'f' `this\is\a\path\t\n` version=4.8.1.beta nums=[2 4 6] letters=['a' 'b' 'c']
+
+atts "Hello" lang="English" length=5 mood:friendly=true
+
+paragraph """
+    This is a paragraph. It is a
+    lot of text!
+    """
+
+map [
+    age = 18
+    goodDriver = false
+    7="prime"
+    birthday=1975/12/2
+]
+
+int_binary 0b1010000101000101101100010110101
+int_hex 0x0A2F
+un_site https://www.un.org/en/
+
+DateTimes {
+    date_time1 2005/12/31@12:30
+    date_time2 1882/5/2@12:30
+    date_time3 2005/12/31@1:00
+    date_time4 1882/5/2@1:00EST
+    date_time5 2005/12/31@12:30:23.12
+    date_time6 1882/5/2@22:30:23.123
+    date_time7 1882/5/2@10:30:23.123/JST
+    date_time8 985/04/11 @12:30:23.123/PST
+    date_time9 1980/5/23@5:30:15.03/GMT+2
+    // date_time10 1980/5/23@15:30:15.03/UTC-3:30
+    date_time11 1980/5/23@9:30:15.03/GMT
+    // date_time12 1978/5/23@12:30:15.2z # 'z' or 'Z' is UTC shorthand from ISO 8601
+    // date_time13 1978/5/23@12:30:15.2z+1
+    date_time14 1980/5/23@14:30:15.123_534_623/HST
+}

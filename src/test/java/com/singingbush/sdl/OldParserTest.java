@@ -16,13 +16,13 @@ import static org.junit.Assert.assertTrue;
  * @author Samael Bate (singingbush)
  *         created on 14/07/2017
  */
-public class ParserTest {
+public class OldParserTest {
 
     @Test
     public void testComments() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("comments.sdl");
 
-        final List<Tag> tags = new Parser(inputStream).parse();
+        final List<Tag> tags = new OldParser(inputStream).parse();
 
         assertEquals("There should be 'tag bar=false'", 1, tags.size());
         assertEquals("tag", tags.get(0).getName());
@@ -33,7 +33,7 @@ public class ParserTest {
     public void testDatatypes() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("datatypes.sdl");
 
-        final List<Tag> tags = new Parser(inputStream).parse();
+        final List<Tag> tags = new OldParser(inputStream).parse();
 
         assertFalse(tags.isEmpty());
         assertEquals(19, tags.size());
@@ -48,7 +48,7 @@ public class ParserTest {
             "</root>\n" +
             "`";
 
-        final List<Tag> tags = new Parser(text).parse();
+        final List<Tag> tags = new OldParser(text).parse();
 
         assertFalse(tags.isEmpty());
         assertEquals(1, tags.size());
@@ -67,7 +67,7 @@ public class ParserTest {
 
     @Test
     public void testSemicolons() throws IOException, SDLParseException {
-        final List<Tag> tags = new Parser("thing {\n    \"line1\";\"line2\"; \"line3\"\n    1; 2; 3;\n}").parse();
+        final List<Tag> tags = new OldParser("thing {\n    \"line1\";\"line2\"; \"line3\"\n    1; 2; 3;\n}").parse();
 
         assertFalse(tags.isEmpty());
         assertEquals(1, tags.size());
@@ -84,7 +84,7 @@ public class ParserTest {
     public void testDetails() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("details.sdl");
 
-        final List<Tag> tags = new Parser(inputStream).parse();
+        final List<Tag> tags = new OldParser(inputStream).parse();
 
         assertFalse(tags.isEmpty());
         assertEquals(7, tags.size());
@@ -107,7 +107,7 @@ public class ParserTest {
     public void testExample() throws IOException, SDLParseException {
         final InputStreamReader inputStream = loadTestResource("example.sdl");
 
-        final List<Tag> tags = new Parser(inputStream).parse();
+        final List<Tag> tags = new OldParser(inputStream).parse();
 
         assertFalse(tags.isEmpty());
         assertEquals(6, tags.size());
@@ -133,7 +133,7 @@ public class ParserTest {
 
     @Test
     public void testParserWithString() throws IOException, SDLParseException {
-        final List<Tag> tags = new Parser("author \"Peter Parker\" email=\"peter@example.org\" active=true").parse();
+        final List<Tag> tags = new OldParser("author \"Peter Parker\" email=\"peter@example.org\" active=true").parse();
         assertFalse(tags.isEmpty());
         assertEquals(1, tags.size());
         assertEquals("author", tags.get(0).getName());

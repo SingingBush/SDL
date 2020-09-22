@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -226,7 +225,7 @@ public class DataStructureTest {
             "  }\n" +
             "}";
 
-        final Tag root = new Parser(sdl).parse().get(0);
+        final Tag root = new OldParser(sdl).parse().get(0);
 
         final List<Tag> children = root.getChildrenForNamespace("person", false);
         assertEquals(2, children.size());
@@ -234,7 +233,7 @@ public class DataStructureTest {
         final List<Tag> childrenAndGrandchildren = root.getChildrenForNamespace("person", true);
         assertEquals(6, childrenAndGrandchildren.size());
 
-        assertEquals(root, new Parser(root.toString()).parse().get(0));
+        assertEquals(root, new OldParser(root.toString()).parse().get(0));
 
         assertEquals("namespaces should work",
             map("name", "Akiko",

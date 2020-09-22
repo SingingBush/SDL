@@ -28,7 +28,7 @@ public class BinaryTest {
         // The bytes are for: "japanese: 日本語, korean: 여보세요, and russian здравствулте";
         final String multilingual = "[amFwYW5lc2U6IOaXpeacrOiqniwga29yZWFuOiDsl6zrs7TshLjsmpQsIGFuZCBydXNzaWFuINC30LTRgNCw0LLRgdGC0LLRg9C70YLQtQ==]";
 
-        final Tag t = new Parser(multilingual).parse().get(0);
+        final Tag t = new OldParser(multilingual).parse().get(0);
 
         final byte[] bytes = byte[].class.cast(t.getValue());
         final String result = new String(bytes, UTF_8);
@@ -48,7 +48,7 @@ public class BinaryTest {
 
     @Test
     public void testPngImage() throws IOException, SDLParseException {
-        final Tag t = new Parser(PNG_IMAGE).parse().get(0);
+        final Tag t = new OldParser(PNG_IMAGE).parse().get(0);
 
         final String filename = "target/image.png";
 

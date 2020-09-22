@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -342,8 +341,8 @@ public class SDL {
      */
     public static SdlValue<String> value(@NotNull final String value, final boolean literal) {
         return literal?
-            new SdlValue<>(Parser.parseMultilineString(String.format("`%s`", value)), SdlType.STRING_MULTILINE) :
-            new SdlValue<>(Parser.parseString(String.format("\"%s\"", value)), SdlType.STRING);
+            new SdlValue<>(OldParser.parseMultilineString(String.format("`%s`", value)), SdlType.STRING_MULTILINE) :
+            new SdlValue<>(OldParser.parseString(String.format("\"%s\"", value)), SdlType.STRING);
     }
 
     /**
@@ -461,11 +460,11 @@ public class SDL {
         }
 
 		if(literal.startsWith("\""))
-			return new SdlValue<>(Parser.parseString(literal), SdlType.STRING);
+			return new SdlValue<>(OldParser.parseString(literal), SdlType.STRING);
         if(literal.startsWith("`"))
-            return new SdlValue<>(Parser.parseMultilineString(literal), SdlType.STRING_MULTILINE);
+            return new SdlValue<>(OldParser.parseMultilineString(literal), SdlType.STRING_MULTILINE);
 		if(literal.startsWith("'"))
-			return new SdlValue<>(Parser.parseCharacter(literal), SdlType.CHARACTER);
+			return new SdlValue<>(OldParser.parseCharacter(literal), SdlType.CHARACTER);
 		if(literal.equals("null"))
 			return new SdlValue<>(null, SdlType.NULL);
 		if(literal.equals("true") || literal.equals("on"))
@@ -473,21 +472,21 @@ public class SDL {
 		if(literal.equals("false") || literal.equals("off"))
 			return new SdlValue<>(Boolean.FALSE, SdlType.BOOLEAN);
 		if(literal.startsWith("["))
-			return new SdlValue<>(Parser.parseBinary(literal), SdlType.BINARY);
+			return new SdlValue<>(OldParser.parseBinary(literal), SdlType.BINARY);
 		if(literal.matches("\\d+[-|/]\\d+[-|/]\\d+")) { //literal.matches("\\d+/\\d+/\\d+")) {
-            return new SdlValue<>(Parser.parseDate(literal), SdlType.DATE);
+            return new SdlValue<>(OldParser.parseDate(literal), SdlType.DATE);
         }
-        if(literal.matches(Parser.DATETIME_REGEX)) { // "(\\d+/\\d+/\\d+) ((\\d+:\\d+:\\d+(.\\d+)?)(-\\w+)?)"
+        if(literal.matches(OldParser.DATETIME_REGEX)) { // "(\\d+/\\d+/\\d+) ((\\d+:\\d+:\\d+(.\\d+)?)(-\\w+)?)"
 		    return literal.contains("-") ?
-                new SdlValue<>(Parser.parseZonedDateTime(literal), SdlType.DATETIME) :
-                new SdlValue<>(Parser.parseLocalDateTime(literal), SdlType.DATETIME);
+                new SdlValue<>(OldParser.parseZonedDateTime(literal), SdlType.DATETIME) :
+                new SdlValue<>(OldParser.parseLocalDateTime(literal), SdlType.DATETIME);
         }
 
-		if(literal.matches(Parser.TIMESPAN_REGEX)) { // "-?(\\d+d:)?(\\d+:\\d+:\\d+)(.\\d+)?"
-            return new SdlValue<>(Parser.parseTimeSpan(literal), SdlType.DURATION);
+		if(literal.matches(OldParser.TIMESPAN_REGEX)) { // "-?(\\d+d:)?(\\d+:\\d+:\\d+)(.\\d+)?"
+            return new SdlValue<>(OldParser.parseTimeSpan(literal), SdlType.DURATION);
         }
 		if("01234567890-.".indexOf(literal.charAt(0)) != -1) {
-            return new SdlValue<>(Parser.parseNumber(literal), SdlType.NUMBER);
+            return new SdlValue<>(OldParser.parseNumber(literal), SdlType.NUMBER);
         }
 
 		throw new IllegalArgumentException("String " + literal + " does not represent an SDL type.");

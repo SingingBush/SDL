@@ -910,7 +910,7 @@ public class Tag implements Serializable {
 	 * @return This tag after adding all the children read from the reader
 	 */
 	public Tag read(@NotNull final Reader reader) throws IOException, SDLParseException {
-		final List<Tag> tags = new Parser(reader).parse();
+		final List<Tag> tags = new OldParser(reader).parse();
 		for(final Tag t : tags) {
             addChild(t);
         }

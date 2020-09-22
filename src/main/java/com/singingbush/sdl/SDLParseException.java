@@ -37,14 +37,28 @@ public class SDLParseException extends Exception {
 	 *        -1 for unknown
 	 */
 	public SDLParseException(String description, int line, int position) {
-		super(String.format("%s Line %s, Position %s",
-				description,
-				line == -1 ? "unknown" : line,
-				position == -1 ? "unknown" : position));
-
-		this.line = line;
-		this.position = position;
+		this(description, line, position, null);
 	}
+
+    /**
+     * Note: Line and positioning numbering start with 1 rather than 0 to be
+     * consistent with most editors.
+     *
+     * @param description A description of the problem.
+     * @param line The line on which the error occurred or -1 for unknown
+     * @param position The position (within the line) where the error occurred or
+     *        -1 for unknown
+     * @param cause the exception that resulted in this SDLParseException being thrown
+     */
+    public SDLParseException(String description, int line, int position, Throwable cause) {
+        super(String.format("%s Line %s, Position %s",
+            description,
+            line == -1 ? "unknown" : line,
+            position == -1 ? "unknown" : position), cause);
+
+        this.line = line;
+        this.position = position;
+    }
 
 	/**
 	 * @return Returns the line on which the error occured
