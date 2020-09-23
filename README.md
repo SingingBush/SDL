@@ -1,6 +1,7 @@
 [SDLang](https://sdlang.org/) (Simple Declarative Language) for Java
 ============
 
+![Java CI](https://github.com/sdlang-dev/SDL/workflows/Java%20CI/badge.svg)
 [![Build Status](https://travis-ci.org/SingingBush/SDL.svg?branch=master)](https://travis-ci.org/SingingBush/SDL)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.singingbush/sdlang/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.singingbush/sdlang)
 [![Javadocs](https://www.javadoc.io/badge/com.singingbush/sdlang.svg)](https://www.javadoc.io/doc/com.singingbush/sdlang)
