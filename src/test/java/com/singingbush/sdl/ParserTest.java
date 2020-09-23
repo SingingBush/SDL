@@ -1,6 +1,6 @@
 package com.singingbush.sdl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,9 +8,9 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Samael Bate (singingbush)
@@ -24,9 +24,9 @@ public class ParserTest {
 
         final List<Tag> tags = new Parser(inputStream).parse();
 
-        assertEquals("There should be 'tag bar=false'", 1, tags.size());
+        assertEquals(1, tags.size());
         assertEquals("tag", tags.get(0).getName());
-        assertFalse("tag bar should be false", (Boolean) tags.get(0).getAttribute("bar"));
+        assertFalse((Boolean) tags.get(0).getAttribute("bar"));
     }
 
     @Test
@@ -61,8 +61,8 @@ public class ParserTest {
             "\t<text>Hi there!</text>\n" +
             "</root>\n", tag.getValue());
 
-//        assertEquals("A Tag::toString() should be able to recreate the original SDL", text, tag.stringValue());
-        assertEquals("A Tag::toString() should be able to recreate the original SDL", text, tag.toString());
+        // A Tag::toString() should be able to recreate the original SDL
+        assertEquals(text, tag.toString());
     }
 
     @Test

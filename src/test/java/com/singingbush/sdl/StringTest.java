@@ -1,10 +1,10 @@
 package com.singingbush.sdl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Samael Bate (singingbush)
@@ -19,7 +19,7 @@ public class StringTest {
         assertEquals("string1 \"hello\"", root.getChild("string1").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"hello\"", "hello", sdlValue.getValue());
+        assertEquals("hello", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -30,7 +30,7 @@ public class StringTest {
         assertEquals("string2 \"hi\"", root.getChild("string2").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"hi\"", "hi", sdlValue.getValue());
+        assertEquals("hi", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -41,7 +41,7 @@ public class StringTest {
         assertEquals("string3 `aloha`", root.getChild("string3").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING_MULTILINE);
-        assertEquals("should be \"aloha\"", "aloha", sdlValue.getValue());
+        assertEquals("aloha", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -49,11 +49,10 @@ public class StringTest {
     public void testString4() throws SDLParseException {
         final Tag root = new Tag("root").read("string4 \"hi \\\n    there\"");
 
-        assertEquals("should appear as one line with no new line chars",
-            "string4 \"hi there\"", root.getChild("string4").toString());
+        assertEquals("string4 \"hi there\"", root.getChild("string4").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"hi there\"", "hi there", sdlValue.getValue());
+        assertEquals("hi there", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -63,11 +62,10 @@ public class StringTest {
             "    there \\\n" +
             "    joe\"");
 
-        assertEquals("should appear as one line with no new line chars",
-            "string5 \"hi there joe\"", root.getChild("string5").toString());
+        assertEquals("string5 \"hi there joe\"", root.getChild("string5").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"hi there joe\"", "hi there joe", sdlValue.getValue());
+        assertEquals("hi there joe", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -78,7 +76,7 @@ public class StringTest {
         assertEquals("string6 \"line1\\nline2\"", root.getChild("string6").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"line1\nline2\"", "line1\nline2", sdlValue.getValue());
+        assertEquals("line1\nline2", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -86,11 +84,10 @@ public class StringTest {
     public void testString7() throws SDLParseException {
         final Tag root = new Tag("root").read("string7 `line1\nline2`");
 
-        assertEquals("new lines should be preserved",
-            "string7 `line1\nline2`", root.getChild("string7").toString());
+        assertEquals("string7 `line1\nline2`", root.getChild("string7").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING_MULTILINE);
-        assertEquals("should be \"line1\nline2\"", "line1\nline2", sdlValue.getValue());
+        assertEquals("line1\nline2", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -98,11 +95,10 @@ public class StringTest {
     public void testString8() throws SDLParseException {
         final Tag root = new Tag("root").read("string8 `line1\nline2\nline3`");
 
-        assertEquals("new lines should be preserved",
-            "string8 `line1\nline2\nline3`", root.getChild("string8").toString());
+        assertEquals("string8 `line1\nline2\nline3`", root.getChild("string8").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING_MULTILINE);
-        assertEquals("should be \"line1\nline2\nline3\"", "line1\nline2\nline3", sdlValue.getValue());
+        assertEquals("line1\nline2\nline3", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -113,7 +109,9 @@ public class StringTest {
         assertEquals("string9 `Anything should go in this line without escapes \\ \\\\ \\n \\t \" \"\" ' ''`", root.getChild("string9").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING_MULTILINE);
-        assertEquals("should be \"Anything should go in this line without escapes \\ \\\\ \\n \\t \" \"\" ' ''\"", "Anything should go in this line without escapes \\ \\\\ \\n \\t \" \"\" ' ''", sdlValue.getValue());
+        assertEquals(
+            "Anything should go in this line without escapes \\ \\\\ \\n \\t \" \"\" ' ''",
+            sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -124,7 +122,7 @@ public class StringTest {
         assertEquals("string10 \"escapes \\\"\\\\\\n\\t\"", root.getChild("string10").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"escapes \"\\\n\t\"", "escapes \"\\\n\t", sdlValue.getValue());
+        assertEquals("escapes \"\\\n\t", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -135,7 +133,7 @@ public class StringTest {
         assertEquals("japanese \"日本語\"", root.getChild("japanese").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"日本語\"", "日本語", sdlValue.getValue());
+        assertEquals("日本語", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -146,7 +144,7 @@ public class StringTest {
         assertEquals("korean \"여보세요\"", root.getChild("korean").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"여보세요\"", "여보세요", sdlValue.getValue());
+        assertEquals("여보세요", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -157,7 +155,7 @@ public class StringTest {
         assertEquals("russian \"здравствулте\"", root.getChild("russian").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING);
-        assertEquals("should be \"здравствулте\"", "здравствулте", sdlValue.getValue());
+        assertEquals("здравствулте", sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -176,7 +174,7 @@ public class StringTest {
         assertEquals(text, root.getChild("xml").toString());
 
         final SdlValue sdlValue = shouldHaveSingleStringValue(root, SdlType.STRING_MULTILINE);
-        assertEquals(String.format("should be \"%s\"", xml), xml, sdlValue.getValue());
+        assertEquals(xml, sdlValue.getValue());
         shouldConvertToString(root);
     }
 
@@ -184,12 +182,12 @@ public class StringTest {
         assertEquals(1, tag.getChildren().size());
         final SdlValue sdlValue = tag.getChildren().get(0).getSdlValue();
         assertEquals(expectedType, sdlValue.getType());
-        assertEquals("should be instance of String", String.class, sdlValue.getValue().getClass());
+        assertEquals(String.class, sdlValue.getValue().getClass());
         return sdlValue;
     }
 
     private void shouldConvertToString(final Tag tag) throws SDLParseException {
         final Tag clonedTag = new Tag("test").read(tag.toString());
-        assertEquals("should work with equals()", tag, clonedTag.getChild(tag.getName()));
+        assertEquals(tag, clonedTag.getChild(tag.getName()));
     }
 }

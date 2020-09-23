@@ -1,6 +1,6 @@
 package com.singingbush.sdl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.*;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Samael Bate (singingbush)
@@ -31,7 +31,7 @@ public class DataStructureTest {
         // attributes:
         assertEquals(0, t.getAttributes().size());
 
-        assertEquals("should be able to recreate original SDL", "values1 \"hi\"", t.toString());
+        assertEquals("values1 \"hi\"", t.toString());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class DataStructureTest {
         // attributes:
         assertEquals(0, t.getAttributes().size());
 
-        assertEquals("should be able to recreate original SDL", "values2 \"hi\" \"ho\"", t.toString());
+        assertEquals("values2 \"hi\" \"ho\"", t.toString());
     }
 
     @Test
@@ -65,7 +65,7 @@ public class DataStructureTest {
         // attributes:
         assertEquals(0, t.getAttributes().size());
 
-        assertEquals("should be able to recreate original SDL", "values3 1 \"ho\"", t.toString());
+        assertEquals("values3 1 \"ho\"", t.toString());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class DataStructureTest {
         // attributes:
         assertEquals(0, t.getAttributes().size());
 
-        //assertEquals("should be able to recreate original SDL", "values3 1 \"ho\"", t.toString());
+        //assertEquals("values3 1 \"ho\"", t.toString());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class DataStructureTest {
         // attributes:
         assertEquals(0, t.getAttributes().size());
 
-        //assertEquals("should be able to recreate original SDL", "values3 1 \"ho\"", t.toString());
+        //assertEquals("values3 1 \"ho\"", t.toString());
     }
 
     @Test
@@ -125,7 +125,7 @@ public class DataStructureTest {
         assertEquals(1, t.getAttributes().size());
         assertEquals(5, t.getAttribute("size"));
 
-        assertEquals("should be able to recreate original SDL", "valatts1 \"joe\" size=5", t.toString());
+        assertEquals("valatts1 \"joe\" size=5", t.toString());
     }
 
     @Test
@@ -142,8 +142,8 @@ public class DataStructureTest {
         assertEquals(1, t.getAttributes().size());
         assertEquals(5, t.getAttribute("size"));
 
-        assertEquals("should be able to recreate original SDL (without comment)",
-            "valatts2 \"joe\" size=5", t.toString());
+        // should be able to recreate original SDL (without comment)
+        assertEquals("valatts2 \"joe\" size=5", t.toString());
     }
 
     @Test
@@ -160,8 +160,8 @@ public class DataStructureTest {
         assertEquals(1, t.getAttributes().size());
         assertEquals(5, t.getAttribute("size"));
 
-        assertEquals("should be able to recreate original SDL (without comment)",
-            "valatts3 \"joe\" size=5", t.toString());
+        // should be able to recreate original SDL (without comment)
+        assertEquals("valatts3 \"joe\" size=5", t.toString());
     }
 
     @Test
@@ -236,9 +236,7 @@ public class DataStructureTest {
 
         assertEquals(root, new Parser(root.toString()).parse().get(0));
 
-        assertEquals("namespaces should work",
-            map("name", "Akiko",
-                "birthday", LocalDate.of(1976,4,18)),
+        assertEquals(map("name", "Akiko", "birthday", LocalDate.of(1976,4,18)),
             root.getChild("daughter", true).getAttributesForNamespace("public"));
     }
 

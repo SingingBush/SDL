@@ -1,7 +1,7 @@
 package com.domain;
 
 import com.singingbush.sdl.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * These tests are in a different package to 'com.singingbush.sdl' to ensure that the API makes sense
@@ -91,7 +91,8 @@ public class SdlangTest {
             .withAttribute("lng", SDL.value(1_000L))
             .build();
 
-        assertEquals("content should be same regardless of the new style allowing comments", t, tag);
+        // content should be same regardless of the new style allowing comments
+        assertEquals(t, tag);
 
         assertEquals(1, tag.getValues().size());
         assertEquals(Character.class, tag.getValues().get(0).getClass());
