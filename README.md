@@ -12,7 +12,7 @@
 
 ### Adding the dependency to your project
 
-Releases are available from Maven Central
+Releases for v2 are available from Maven Central under the com.singingbush groupid (as v2 was [singingbush]'s fork of v1):
 
 ```xml
     <dependency>
@@ -21,6 +21,8 @@ Releases are available from Maven Central
         <version>2.1.0</version>
     </dependency>
 ```
+
+The v2 repo has been transferred to the sdlang-dev github organisation so that continued development and a planned v3 can be worked on as a joint effort. For now v2 releases will continue with the same groupId and artifactId. The next major release will likely be under a new groupId.
 
 ### Usage
 
@@ -64,4 +66,4 @@ As the project appears to be abandoned I've forked it with the goal of
 - [x] Overhaul the project and start rewriting the codebase
 - [x] Publish build artifacts to maven central
 
-Daniel Leuck, the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
+[Daniel Leuck](https://github.com/dleuck), the original author, licensed the source as [LGPL v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)

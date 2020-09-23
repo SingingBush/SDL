@@ -9,7 +9,7 @@
     <version>2.1.1-SNAPSHOT</version>
     <name>SDLang</name>
     <description>Support for SDLang (Simple Declarative Language)</description>
-    <url>https://github.com/SingingBush/SDL</url>
+    <url>https://github.com/sdlang-dev/SDL</url>
     <inceptionYear>2011</inceptionYear>
 
     <licenses>
@@ -42,14 +42,14 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/SingingBush/SDL.git</connection>
-        <developerConnection>scm:git:ssh://github.com:SingingBush/SDL.git</developerConnection>
-        <url>https://github.com/SingingBush/SDL/tree/master</url>
+        <connection>scm:git:git://github.com/sdlang-dev/SDL.git</connection>
+        <developerConnection>scm:git:ssh://github.com:sdlang-dev/SDL.git</developerConnection>
+        <url>https://github.com/sdlang-dev/SDL/tree/master</url>
     </scm>
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/SingingBush/SDL/issues</url>
+        <url>https://github.com/sdlang-dev/SDL/issues</url>
     </issueManagement>
 
     <distributionManagement>
